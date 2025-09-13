@@ -63,9 +63,8 @@ const paymentService = new PaymentApplicationService(
 /**
  * Controller para operações de pagamento
  */
+/* TEMPORARIAMENTE COMENTADO PARA RESOLVER ERROS DE TIPAGEM
 export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 'payment-controller' })
-  // Temporariamente comentado para corrigir erros de tipagem
-  /*
 
   // GET /payments - Listar pagamentos
   .get('/', async ({ query }) => {
@@ -415,4 +414,4 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
   }, {
     params: t.Object({ id: t.String() })
   });
-  */
+*/

@@ -4,8 +4,8 @@ import { cors } from '@elysiajs/cors';
 
 // Importar rotas
 import { authRoutes } from '@/presentation/routes/auth.routes';
-// import { paymentRoutes } from '@/presentation/routes/payment.routes';
-// import { tenantRoutes } from '@/presentation/routes/tenant.routes';
+import { paymentRoutes } from '@/presentation/routes/payment.routes';
+import { tenantRoutes } from '@/presentation/routes/tenant.routes';
 import { healthRoutes } from '@/presentation/routes/health.routes';
 
 // Importar middleware
@@ -36,40 +36,137 @@ export const app = new Elysia()
         info: {
           title: 'Payment API',
           version: '1.0.0',
-          description:
-            'API de pagamentos multi-tenant com Clean Architecture, DDD e TDD',
+          description: `
+# Payment API
+
+API de pagamentos multi-tenant construída com Clean Architecture, Domain-Driven Design (DDD) e Test-Driven Development (TDD).
+
+## Características
+
+- **Multi-tenant**: Suporte completo para múltiplos tenants
+- **Clean Architecture**: Separação clara de responsabilidades em camadas
+- **DDD**: Modelagem baseada em domínio de negócio
+- **TDD**: Desenvolvimento orientado a testes
+- **Múltiplos Providers**: Suporte para Stripe e Pagar.me
+- **Autenticação JWT**: Sistema de autenticação robusto
+- **Webhooks**: Notificações em tempo real
+- **Rate Limiting**: Controle de taxa de requisições
+- **Logging**: Sistema de logs estruturado
+
+## Providers Suportados
+
+- **Stripe**: Gateway de pagamento internacional
+- **Pagar.me**: Gateway de pagamento brasileiro
+
+## Fluxo de Pagamento
+
+1. **Criação**: Pagamento é criado com status PENDING
+2. **Autorização**: Pagamento é autorizado (se necessário)
+3. **Captura**: Pagamento é capturado (automática ou manual)
+4. **Reembolso**: Pagamento pode ser reembolsado (parcial ou total)
+
+## Autenticação
+
+Todos os endpoints protegidos requerem um token JWT no header:
+\`Authorization: Bearer <token>\`
+
+## Rate Limiting
+
+- **Limite**: 100 requisições por 15 minutos
+- **Headers de resposta**: Incluem informações sobre o limite atual
+          `,
           contact: {
             name: 'Payment API Team',
             email: 'team@payment-api.com',
+            url: 'https://payment-api.com',
+          },
+          license: {
+            name: 'MIT',
+            url: 'https://opensource.org/licenses/MIT',
           },
         },
         servers: [
           {
             url: 'http://0.0.0.0:3000',
-            description: 'Development server',
+            description: 'Development server (Docker)',
           },
           {
             url: 'http://localhost:3000',
             description: 'Local development server',
           },
+          {
+            url: 'https://api.payment-api.com',
+            description: 'Production server',
+          },
         ],
         tags: [
           {
             name: 'Health',
-            description: 'Health check endpoints',
+            description: 'Endpoints para verificação de saúde da API e dependências',
           },
           {
             name: 'Auth',
-            description: 'Authentication and authorization endpoints',
+            description: 'Autenticação e autorização de usuários',
           },
           {
             name: 'Payments',
-            description: 'Payment processing endpoints',
+            description: 'Processamento de pagamentos, captura, reembolsos e consultas',
           },
           {
             name: 'Tenants',
-            description: 'Tenant management endpoints',
+            description: 'Gerenciamento de tenants, configurações e usuários',
           },
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+              description: 'Token JWT para autenticação',
+            },
+            tenantAuth: {
+              type: 'apiKey',
+              in: 'header',
+              name: 'X-Tenant-ID',
+              description: 'ID do tenant para identificação multi-tenant',
+            },
+          },
+          schemas: {
+            Error: {
+              type: 'object',
+              properties: {
+                error: { type: 'string', description: 'Tipo do erro' },
+                message: { type: 'string', description: 'Mensagem de erro' },
+                timestamp: { type: 'string', format: 'date-time', description: 'Timestamp do erro' },
+                details: { type: 'object', description: 'Detalhes adicionais do erro' },
+              },
+              required: ['error', 'message', 'timestamp'],
+            },
+            ValidationError: {
+              type: 'object',
+              properties: {
+                error: { type: 'string', example: 'Validation Error' },
+                message: { type: 'string', description: 'Mensagem de validação' },
+                timestamp: { type: 'string', format: 'date-time' },
+                details: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      field: { type: 'string' },
+                      message: { type: 'string' },
+                    },
+                  },
+                },
+              },
+              required: ['error', 'message', 'timestamp'],
+            },
+          },
+        },
+        security: [
+          { bearerAuth: [] },
+          { tenantAuth: [] },
         ],
       },
       path: '/docs',
@@ -141,10 +238,10 @@ export const app = new Elysia()
   .use(authRoutes)
 
   // Rotas de pagamento
-  // .use(paymentRoutes)
+  .use(paymentRoutes)
 
   // Rotas de tenant
-  // .use(tenantRoutes)
+  .use(tenantRoutes)
 
   // Rota padrão
   .get('/', () => ({

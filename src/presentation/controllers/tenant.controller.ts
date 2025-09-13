@@ -85,9 +85,8 @@ const tenantService = new TenantApplicationService(
 /**
  * Controller para operações de tenant
  */
+/* TEMPORARIAMENTE COMENTADO PARA RESOLVER ERROS DE TIPAGEM
 export const tenantController = new Elysia({ prefix: '/api/v1/tenants', name: 'tenant-controller' })
-  // Temporariamente comentado para corrigir erros de tipagem
-  /*
 
   // GET /tenants - Listar tenants
   .get('/', async ({ query }) => {
@@ -465,4 +464,4 @@ export const tenantController = new Elysia({ prefix: '/api/v1/tenants', name: 't
   }, {
     params: t.Object({ id: t.String() })
   });
-  */
+*/
