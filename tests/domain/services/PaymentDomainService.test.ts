@@ -103,21 +103,34 @@ describe('PaymentDomainService', () => {
     });
 
     test('should not process payment with disallowed provider', () => {
-      const mercadopagoPayment = Payment.create(
-        'payment-mp',
+      // Criar configurações que só permitem stripe
+      const restrictedSettings = TenantSettings.create(
+        'America/Sao_Paulo',
+        'BRL',
+        'pt-BR',
+        ['stripe'], // Apenas stripe permitido
+        'https://example.com/webhook',
+        {
+          maxPaymentAmount: '100000',
+          autoCaptureEnabled: 'true'
+        }
+      );
+
+      const pagarmePayment = Payment.create(
+        'payment-pagarme',
         'tenant-123',
         null,
         10.00,
         'BRL',
-        PaymentProvider.PAGARME,
+        PaymentProvider.PAGARME, // Pagar.me não está na lista permitida
         'pi_pagarme',
-        'Mercado Pago payment',
+        'Pagar.me payment',
         {}
       );
 
-      const result = PaymentDomainService.canProcessPayment(mercadopagoPayment, tenantSettings);
+      const result = PaymentDomainService.canProcessPayment(pagarmePayment, restrictedSettings);
       expect(result.canProcess).toBe(false);
-      expect(result.reason).toContain('Provider mercadopago não é permitido');
+      expect(result.reason).toContain('Provider pagarme não é permitido para este tenant');
     });
   });
 
