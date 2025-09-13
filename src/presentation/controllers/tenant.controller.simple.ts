@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { TenantStatus } from '@/domain/enums/TenantStatus';
+import { DrizzleTenantRepository } from '@/infrastructure/database/repositories/tenant.repository';
 
 /**
  * Controller simplificado para operações de tenant (apenas para documentação Swagger)
@@ -7,17 +8,60 @@ import { TenantStatus } from '@/domain/enums/TenantStatus';
 export const tenantControllerSimple = new Elysia({ prefix: '/tenants', name: 'tenant-controller-simple' })
 
   // GET /tenants - Listar tenants
-  .get('/', () => ({
-    success: true,
-    data: [],
-    pagination: {
-      page: 1,
-      limit: 10,
-      total: 0,
-      totalPages: 0
-    },
-    timestamp: new Date().toISOString()
-  }), {
+  .get('/', async ({ query }) => {
+    try {
+      const tenantRepository = new DrizzleTenantRepository();
+      const page = query.page || 1;
+      const limit = query.limit || 20;
+      const offset = (page - 1) * limit;
+      
+      // Buscar tenants do banco
+      const tenants = await tenantRepository.findAll(limit, offset);
+      const total = await tenantRepository.count();
+      
+      // Converter para DTOs
+      const tenantDTOs = tenants.map(tenant => ({
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        email: tenant.email,
+        status: tenant.status,
+        settings: tenant.settings,
+        apiKeys: tenant.apiKeys,
+        createdAt: tenant.createdAt,
+        updatedAt: tenant.updatedAt,
+        deletedAt: tenant.deletedAt
+      }));
+      
+      const totalPages = Math.ceil(total / limit);
+      
+      return {
+        success: true,
+        data: tenantDTOs,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Erro ao listar tenants:', error);
+      return {
+        success: false,
+        error: 'Erro interno do servidor',
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        },
+        timestamp: new Date().toISOString()
+      };
+    }
+  }, {
     query: t.Object({
       page: t.Optional(t.Number()),
       limit: t.Optional(t.Number()),

@@ -211,4 +211,20 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       .where(and(...conditions));
     return Number(result[0].total) || 0;
   }
+
+  async findAll(limit = 50, offset = 0): Promise<Payment[]> {
+    return await db
+      .select()
+      .from(payments)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(sql`${payments.createdAt} DESC`);
+  }
+
+  async countAll(): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(payments);
+    return result[0].count;
+  }
 }
