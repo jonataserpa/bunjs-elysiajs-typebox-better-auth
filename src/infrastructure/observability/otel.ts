@@ -44,16 +44,18 @@ export function initializeOpenTelemetry() {
           enabled: true,
           requestHook: (span, request) => {
             // Adicionar informações customizadas aos spans HTTP
-            span.setAttributes({
-              'http.request.headers.user-agent': request.getHeader('user-agent') as string,
-              'http.request.headers.content-type': request.getHeader('content-type') as string,
-            });
+            if ('headers' in request) {
+              span.setAttributes({
+                'http.request.headers.user-agent': (request as any).headers['user-agent'] as string,
+                'http.request.headers.content-type': (request as any).headers['content-type'] as string,
+              });
+            }
           },
           responseHook: (span, response) => {
             // Adicionar informações customizadas de resposta
             span.setAttributes({
               'http.response.status_code': response.statusCode,
-              'http.response.headers.content-type': response.getHeader('content-type') as string,
+              'http.response.headers.content-type': (response as any).headers['content-type'] as string,
             });
           },
         },

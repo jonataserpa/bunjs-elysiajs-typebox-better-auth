@@ -26,15 +26,6 @@ processors:
     spike_limit_mib: 128
     check_interval: 5s
 
-  # Filtro para remover spans desnecessários
-  filter:
-    traces:
-      span:
-        - 'attributes["http.url"] == "/health"'
-    metrics:
-      metric:
-        - 'name == "up"'
-
   # Processador para adicionar recursos customizados
   resource:
     attributes:
@@ -45,23 +36,10 @@ processors:
         value: development
         action: upsert
 
-  # Processador para modificar nomes de métricas
-  attributes:
-    actions:
-      - key: tenant_id
-        action: insert
-        from_attribute: tenant_id
-        value: unknown
-    metrics:
-      - key: tenant_id
-        action: insert
-        from_attribute: tenant_id
-        value: unknown
-
 exporters:
-  # Exportar traces para Jaeger
-  jaeger:
-    endpoint: jaeger:14250
+  # Exportar traces para Jaeger via OTLP
+  otlp/jaeger:
+    endpoint: jaeger:4317
     tls:
       insecure: true
 
@@ -76,12 +54,6 @@ exporters:
   # Exportar logs (opcional)
   logging:
     loglevel: debug
-
-  # Exportar para OTLP (backup)
-  otlp:
-    endpoint: http://localhost:4317
-    tls:
-      insecure: true
 
 extensions:
   health_check:
@@ -99,12 +71,12 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch, filter, resource, attributes]
-      exporters: [jaeger, logging]
+      processors: [memory_limiter, batch, resource]
+      exporters: [otlp/jaeger, logging]
 
     metrics:
       receivers: [otlp, prometheus]
-      processors: [memory_limiter, batch, filter, resource, attributes]
+      processors: [memory_limiter, batch, resource]
       exporters: [prometheus, logging]
 
     logs:
