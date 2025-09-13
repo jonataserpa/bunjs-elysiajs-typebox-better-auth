@@ -47,7 +47,7 @@
     "elysia": "^1.4.4",
     "pagarme": "^4.0.0",
     "postgres": "^3.4.7",
-    "stripe": "^14.0.0",
+    "stripe": "^18.5.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

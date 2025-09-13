@@ -1,4 +1,3 @@
-// Interfaces
-export * from './repositories/TenantRepository';
-export * from './repositories/UserRepository';
-export * from './repositories/PaymentRepository';
+// Application Interfaces
+export * from './repositories';
+export * from './external';
