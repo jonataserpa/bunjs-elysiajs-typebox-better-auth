@@ -2,9 +2,6 @@ import { Elysia } from 'elysia';
 import { swagger } from '@elysiajs/swagger';
 import { cors } from '@elysiajs/cors';
 
-// Importar OpenTelemetry (deve ser a primeira importação)
-import { initializeOpenTelemetry } from '@/infrastructure/observability/otel';
-
 // Importar rotas
 import { authRoutes } from '@/presentation/routes/auth.routes';
 import { paymentRoutes } from '@/presentation/routes/payment.routes';
@@ -15,9 +12,6 @@ import { healthRoutes } from '@/presentation/routes/health.routes';
 // Importar middleware
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '@/presentation/middleware/simple.middleware';
 import { appConfig } from '@/shared/config/app.config';
-
-// Inicializar OpenTelemetry antes de qualquer coisa
-initializeOpenTelemetry();
 
 export const app = new Elysia()
   // Middleware global

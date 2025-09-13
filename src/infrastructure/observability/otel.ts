@@ -1,7 +1,7 @@
+// Versão simplificada do OpenTelemetry para Bun.js
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
@@ -15,60 +15,34 @@ export function initializeOpenTelemetry() {
     [SemanticResourceAttributes.SERVICE_NAMESPACE]: 'payment-system',
   });
 
-  // Exportador de traces para OpenTelemetry Collector
+  // Exportador de traces para OpenTelemetry Collector (HTTP)
   const traceExporter = new OTLPTraceExporter({
-    url: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://localhost:4317/v1/traces',
+    url: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://otel-collector:4318/v1/traces',
   });
 
-  // Exportador de métricas para OpenTelemetry Collector
+  // Exportador de métricas para OpenTelemetry Collector (HTTP)
   const metricExporter = new OTLPMetricExporter({
-    url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://localhost:4317/v1/metrics',
+    url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://otel-collector:4318/v1/metrics',
   });
 
-  // Configuração do SDK
+  // Configuração do SDK (versão simplificada para Bun.js)
   const sdk = new NodeSDK({
     resource,
     traceExporter,
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
-      exportIntervalMillis: 10000, // Exporta métricas a cada 10 segundos
+      exportIntervalMillis: 30000, // Exporta métricas a cada 30 segundos
     }),
-    instrumentations: [
-      getNodeAutoInstrumentations({
-        // Desabilitar instrumentações que podem causar conflito
-        '@opentelemetry/instrumentation-fs': {
-          enabled: false,
-        },
-        // Configurar instrumentações específicas
-        '@opentelemetry/instrumentation-http': {
-          enabled: true,
-          requestHook: (span, request) => {
-            // Adicionar informações customizadas aos spans HTTP
-            if ('headers' in request) {
-              span.setAttributes({
-                'http.request.headers.user-agent': (request as any).headers['user-agent'] as string,
-                'http.request.headers.content-type': (request as any).headers['content-type'] as string,
-              });
-            }
-          },
-          responseHook: (span, response) => {
-            // Adicionar informações customizadas de resposta
-            span.setAttributes({
-              'http.response.status_code': response.statusCode,
-              'http.response.headers.content-type': (response as any).headers['content-type'] as string,
-            });
-          },
-        },
-      }),
-    ],
+    // Sem instrumentações automáticas para evitar conflitos com Bun.js
+    instrumentations: [],
   });
 
   // Inicializar o SDK
   sdk.start();
 
   console.log('🔍 OpenTelemetry inicializado com sucesso!');
-  console.log('📊 Traces serão enviados para:', process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://localhost:4317/v1/traces');
-  console.log('📈 Métricas serão enviadas para:', process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://localhost:4317/v1/metrics');
+  console.log('📊 Traces serão enviados para:', process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://otel-collector:4318/v1/traces');
+  console.log('📈 Métricas serão enviadas para:', process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://otel-collector:4318/v1/metrics');
 
   // Graceful shutdown
   process.on('SIGTERM', () => {

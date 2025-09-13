@@ -1,3 +1,9 @@
+// Importar OpenTelemetry PRIMEIRO (antes de qualquer outra importação)
+import { initializeOpenTelemetry } from './infrastructure/observability/otel';
+
+// Inicializar OpenTelemetry antes de qualquer coisa
+initializeOpenTelemetry();
+
 import app from './app';
 
 const PORT = process.env.PORT || 3000;
