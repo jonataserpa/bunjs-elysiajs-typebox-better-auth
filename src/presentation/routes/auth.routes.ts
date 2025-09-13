@@ -149,7 +149,12 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
     }
   }, {
     body: LoginDTO,
-    response: AuthResponseDTO
+    response: AuthResponseDTO,
+    detail: {
+      tags: ['Auth'],
+      summary: 'Login',
+      description: 'Realiza login do usuário com email, senha e tenant ID',
+    }
   })
 
   // POST /auth/register - Registro
@@ -195,7 +200,12 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
     }
   }, {
     body: RegisterDTO,
-    response: AuthResponseDTO
+    response: AuthResponseDTO,
+    detail: {
+      tags: ['Auth'],
+      summary: 'Registro',
+      description: 'Registra um novo usuário no sistema',
+    }
   })
 
   // POST /auth/refresh - Renovar token
@@ -257,7 +267,12 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
     }
   }, {
     body: RefreshTokenDTO,
-    response: AuthResponseDTO
+    response: AuthResponseDTO,
+    detail: {
+      tags: ['Auth'],
+      summary: 'Renovar Token',
+      description: 'Renova o token de acesso usando o refresh token',
+    }
   })
 
   // POST /auth/logout - Logout
@@ -281,7 +296,12 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
       throw error;
     }
   }, {
-    response: SuccessResponseDTO
+    response: SuccessResponseDTO,
+    detail: {
+      tags: ['Auth'],
+      summary: 'Logout',
+      description: 'Realiza logout do usuário e invalida o token',
+    }
   })
 
   // GET /auth/me - Informações do usuário atual
@@ -304,5 +324,10 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
       throw error;
     }
   }, {
-    response: SuccessResponseDTO
+    response: SuccessResponseDTO,
+    detail: {
+      tags: ['Auth'],
+      summary: 'Informações do Usuário',
+      description: 'Retorna as informações do usuário autenticado',
+    }
   });

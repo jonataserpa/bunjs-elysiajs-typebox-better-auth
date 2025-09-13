@@ -101,12 +101,12 @@ Todos os endpoints protegidos requerem um token JWT no header:
         ],
         tags: [
           {
-            name: 'Health',
-            description: 'Endpoints para verificação de saúde da API e dependências',
-          },
-          {
             name: 'Auth',
             description: 'Autenticação e autorização de usuários',
+          },
+          {
+            name: 'Health',
+            description: 'Endpoints para verificação de saúde da API e dependências',
           },
           {
             name: 'Payments',
