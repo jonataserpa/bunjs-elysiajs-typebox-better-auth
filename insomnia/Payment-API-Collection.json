@@ -1,0 +1,1002 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-01-13T19:30:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_auth_login",
+      "parentId": "fld_auth",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/auth/login",
+      "name": "Login",
+      "description": "Realiza login do usuário com email, senha e tenant ID",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"123456\",\n  \"tenantId\": \"{{ _.tenant_id }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796600000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_register",
+      "parentId": "fld_auth",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/auth/register",
+      "name": "Registro",
+      "description": "Registra um novo usuário no sistema",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"João Silva\",\n  \"email\": \"joao@example.com\",\n  \"password\": \"123456\",\n  \"tenantId\": \"{{ _.tenant_id }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796599000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_refresh",
+      "parentId": "fld_auth",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/auth/refresh",
+      "name": "Renovar Token",
+      "description": "Renova o token de acesso usando o refresh token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refresh_token }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796598000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_logout",
+      "parentId": "fld_auth",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/auth/logout",
+      "name": "Logout",
+      "description": "Realiza logout do usuário e invalida o token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796597000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_me",
+      "parentId": "fld_auth",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/auth/me",
+      "name": "Informações do Usuário",
+      "description": "Retorna as informações do usuário autenticado",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796596000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_health_check",
+      "parentId": "fld_health",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health Check",
+      "description": "Returns the overall health status of the API",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1736796595000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_health_ready",
+      "parentId": "fld_health",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/health/ready",
+      "name": "Readiness Check",
+      "description": "Returns the readiness status of the API and its dependencies",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1736796594000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_health_live",
+      "parentId": "fld_health",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/health/live",
+      "name": "Liveness Check",
+      "description": "Returns the liveness status of the API",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1736796593000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_list",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments",
+      "name": "Listar Pagamentos",
+      "description": "Lista pagamentos com filtros opcionais e paginação",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "page",
+          "value": "1",
+          "description": "Número da página"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Limite de itens por página"
+        },
+        {
+          "name": "status",
+          "value": "pending",
+          "description": "Status do pagamento (pending, authorized, captured, failed, cancelled, refunded)"
+        },
+        {
+          "name": "provider",
+          "value": "stripe",
+          "description": "Provedor de pagamento (stripe, pagarme)"
+        },
+        {
+          "name": "startDate",
+          "value": "2025-01-01",
+          "description": "Data de início (YYYY-MM-DD)"
+        },
+        {
+          "name": "endDate",
+          "value": "2025-01-31",
+          "description": "Data de fim (YYYY-MM-DD)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796592000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_get",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}",
+      "name": "Buscar Pagamento por ID",
+      "description": "Busca um pagamento específico por ID",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796591000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_create",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments",
+      "name": "Criar Pagamento",
+      "description": "Cria um novo pagamento",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"amount\": 100.00,\n  \"currency\": \"BRL\",\n  \"provider\": \"stripe\",\n  \"description\": \"Pagamento de teste\",\n  \"metadata\": {\n    \"order_id\": \"12345\",\n    \"customer_id\": \"67890\"\n  },\n  \"expiresAt\": \"2025-02-13T23:59:59.000Z\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796590000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_update",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}",
+      "name": "Atualizar Pagamento",
+      "description": "Atualiza um pagamento existente",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"description\": \"Descrição atualizada\",\n  \"metadata\": {\n    \"updated_at\": \"2025-01-13T19:30:00.000Z\",\n    \"reason\": \"Atualização manual\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796589000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_capture",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}/capture",
+      "name": "Capturar Pagamento",
+      "description": "Captura um pagamento autorizado",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"amount\": 100.00,\n  \"reason\": \"Captura manual do pagamento\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796588000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_cancel",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}/cancel",
+      "name": "Cancelar Pagamento",
+      "description": "Cancela um pagamento pendente ou autorizado",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"reason\": \"Cancelamento solicitado pelo cliente\",\n  \"metadata\": {\n    \"cancelled_by\": \"admin\",\n    \"cancelled_at\": \"2025-01-13T19:30:00.000Z\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796587000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_refund",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}/refund",
+      "name": "Estornar Pagamento",
+      "description": "Estorna um pagamento capturado",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"amount\": 50.00,\n  \"reason\": \"Reembolso parcial solicitado\",\n  \"metadata\": {\n    \"refund_type\": \"partial\",\n    \"refunded_by\": \"admin\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796586000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_stats",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/stats",
+      "name": "Estatísticas de Pagamentos",
+      "description": "Retorna estatísticas dos pagamentos",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "status",
+          "value": "captured",
+          "description": "Status do pagamento"
+        },
+        {
+          "name": "provider",
+          "value": "stripe",
+          "description": "Provedor de pagamento"
+        },
+        {
+          "name": "groupBy",
+          "value": "day",
+          "description": "Agrupamento (day, week, month, year)"
+        },
+        {
+          "name": "startDate",
+          "value": "2025-01-01",
+          "description": "Data de início"
+        },
+        {
+          "name": "endDate",
+          "value": "2025-01-31",
+          "description": "Data de fim"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796585000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_batch",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/batch",
+      "name": "Operações em Lote",
+      "description": "Executa operações em lote nos pagamentos",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation\": \"capture\",\n  \"paymentIds\": [\"{{ _.payment_id }}\"],\n  \"reason\": \"Captura em lote\",\n  \"metadata\": {\n    \"batch_id\": \"batch_001\",\n    \"executed_by\": \"admin\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796584000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_webhook",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/webhook/{{ _.provider }}",
+      "name": "Webhook de Pagamento",
+      "description": "Endpoint para receber webhooks dos provedores de pagamento",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": \"evt_1234567890\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_1234567890\",\n      \"amount\": 10000,\n      \"currency\": \"brl\",\n      \"status\": \"succeeded\"\n    }\n  },\n  \"created\": 1736796600\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Stripe-Signature",
+          "value": "t=1736796600,v1=signature_hash_here"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796583000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_payments_delete",
+      "parentId": "fld_payments",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/payments/{{ _.payment_id }}",
+      "name": "Deletar Pagamento",
+      "description": "Deleta um pagamento (soft delete)",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796582000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_list",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants",
+      "name": "Listar Tenants",
+      "description": "Lista tenants com filtros opcionais e paginação",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "page",
+          "value": "1",
+          "description": "Número da página"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Limite de itens por página"
+        },
+        {
+          "name": "sort",
+          "value": "createdAt",
+          "description": "Campo para ordenação"
+        },
+        {
+          "name": "order",
+          "value": "desc",
+          "description": "Ordem (asc, desc)"
+        },
+        {
+          "name": "status",
+          "value": "active",
+          "description": "Status do tenant (active, inactive, suspended, deleted)"
+        },
+        {
+          "name": "search",
+          "value": "exemplo",
+          "description": "Termo de busca"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796581000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_get",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants/{{ _.tenant_id }}",
+      "name": "Buscar Tenant por ID",
+      "description": "Busca um tenant específico por ID",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796580000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_create",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants",
+      "name": "Criar Tenant",
+      "description": "Cria um novo tenant",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Empresa Exemplo\",\n  \"slug\": \"empresa-exemplo\",\n  \"email\": \"contato@empresaexemplo.com\",\n  \"settings\": {\n    \"allowedProviders\": [\"stripe\", \"pagarme\"],\n    \"maxAmount\": 10000,\n    \"minAmount\": 1,\n    \"webhookUrl\": \"https://empresaexemplo.com/webhook\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796579000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_update",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants/{{ _.tenant_id }}",
+      "name": "Atualizar Tenant",
+      "description": "Atualiza um tenant existente",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Empresa Exemplo Atualizada\",\n  \"email\": \"novo@empresaexemplo.com\",\n  \"settings\": {\n    \"allowedProviders\": [\"stripe\"],\n    \"maxAmount\": 50000,\n    \"minAmount\": 10,\n    \"webhookUrl\": \"https://novo.empresaexemplo.com/webhook\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796578000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_delete",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants/{{ _.tenant_id }}",
+      "name": "Deletar Tenant",
+      "description": "Deleta um tenant (soft delete)",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796577000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_users",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants/{{ _.tenant_id }}/users",
+      "name": "Listar Usuários do Tenant",
+      "description": "Lista usuários de um tenant específico",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "page",
+          "value": "1",
+          "description": "Número da página"
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "description": "Limite de itens por página"
+        },
+        {
+          "name": "role",
+          "value": "user",
+          "description": "Filtrar por role (admin, user)"
+        },
+        {
+          "name": "search",
+          "value": "joão",
+          "description": "Termo de busca"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796576000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tenants_stats",
+      "parentId": "fld_tenants",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "url": "{{ _.base_url }}/api/v1/tenants/{{ _.tenant_id }}/stats",
+      "name": "Estatísticas do Tenant",
+      "description": "Retorna estatísticas de um tenant específico",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "period",
+          "value": "30d",
+          "description": "Período (7d, 30d, 90d, 1y)"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1736796575000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_payment_api",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "🔐 Auth",
+      "description": "Endpoints de autenticação e autorização",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1736796600000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_payment_api",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "🏥 Health",
+      "description": "Endpoints de verificação de saúde da API",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1736796595000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_payments",
+      "parentId": "wrk_payment_api",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "💳 Payments",
+      "description": "Endpoints de gerenciamento de pagamentos",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1736796592000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_tenants",
+      "parentId": "wrk_payment_api",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "🏢 Tenants",
+      "description": "Endpoints de gerenciamento de tenants",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1736796581000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_payment_api",
+      "parentId": null,
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "🚀 Payment API",
+      "description": "Collection completa da Payment API - Sistema de pagamentos com múltiplos provedores (Stripe, Pagar.me)",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_payment_api",
+      "modified": 1736796600000,
+      "created": 1736796600000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "tenant_id": "tenant-uuid-example",
+        "payment_id": "payment-uuid-example",
+        "provider": "stripe",
+        "access_token": "your-jwt-access-token-here",
+        "refresh_token": "your-jwt-refresh-token-here"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "tenant_id",
+          "payment_id",
+          "provider",
+          "access_token",
+          "refresh_token"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1736796600000,
+      "_type": "environment"
+    }
+  ]
+}
