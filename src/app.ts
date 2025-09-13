@@ -45,8 +45,12 @@ export const app = new Elysia()
         },
         servers: [
           {
-            url: 'http://localhost:3000',
+            url: 'http://0.0.0.0:3000',
             description: 'Development server',
+          },
+          {
+            url: 'http://localhost:3000',
+            description: 'Local development server',
           },
         ],
         tags: [
