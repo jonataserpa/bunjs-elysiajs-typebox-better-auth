@@ -174,5 +174,46 @@ export const TenantOperationResponseDTO = t.Object({
   timestamp: t.String({ format: 'date-time' })
 });
 
+// DTO para filtros de busca
+export const TenantFiltersDTO = t.Object({
+  page: t.Optional(t.Number({ minimum: 1 })),
+  limit: t.Optional(t.Number({ minimum: 1, maximum: 100 })),
+  status: t.Optional(t.String()),
+});
+
+// DTO para resposta de lista de tenants
+export const TenantListResponseDTO = t.Object({
+  success: t.Boolean(),
+  data: t.Array(TenantResponseDTO),
+  pagination: t.Object({
+    page: t.Number(),
+    limit: t.Number(),
+    total: t.Number(),
+    totalPages: t.Number(),
+  }),
+  timestamp: t.String(),
+});
+
+// DTO para resposta de um tenant
+export const TenantResponseResponseDTO = t.Object({
+  success: t.Boolean(),
+  data: t.Union([TenantResponseDTO, t.Null()]),
+  timestamp: t.String(),
+});
+
 // DTO para listagem de tenants (array de TenantResponseDTO)
 export const TenantListDTO = t.Array(TenantResponseDTO);
+
+// Tipos TypeScript para uso interno
+export type TenantDTO = {
+  id: string;
+  name: string;
+  slug: string;
+  email: string;
+  status: string;
+  settings: Record<string, any> | null;
+  apiKeys: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};

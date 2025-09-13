@@ -163,8 +163,65 @@ export const BatchPaymentResponseDTO = t.Object({
   }))
 });
 
+// DTO para filtros de busca
+export const PaymentFiltersDTO = t.Object({
+  page: t.Optional(t.Number({ minimum: 1 })),
+  limit: t.Optional(t.Number({ minimum: 1, maximum: 100 })),
+  status: t.Optional(t.String()),
+  provider: t.Optional(t.String()),
+  startDate: t.Optional(t.String({ format: 'date' })),
+  endDate: t.Optional(t.String({ format: 'date' })),
+});
+
+// DTO para analytics de pagamentos
+export const PaymentAnalyticsDTO = t.Object({
+  totalAmount: t.Number(),
+  totalCount: t.Number(),
+  successRate: t.Number(),
+  averageAmount: t.Number(),
+  byProvider: t.Record(t.String(), t.Number()),
+  byStatus: t.Record(t.String(), t.Number()),
+});
+
+// DTO para resposta de lista de pagamentos
+export const PaymentListResponseDTO = t.Object({
+  success: t.Boolean(),
+  data: t.Array(PaymentResponseDTO),
+  pagination: t.Object({
+    page: t.Number(),
+    limit: t.Number(),
+    total: t.Number(),
+    totalPages: t.Number(),
+  }),
+  timestamp: t.String(),
+});
+
+// DTO para resposta de um pagamento
+export const PaymentResponseResponseDTO = t.Object({
+  success: t.Boolean(),
+  data: t.Union([PaymentResponseDTO, t.Null()]),
+  timestamp: t.String(),
+});
+
+// DTO para resposta de analytics
+export const PaymentAnalyticsResponseDTO = t.Object({
+  success: t.Boolean(),
+  data: PaymentAnalyticsDTO,
+  timestamp: t.String(),
+});
+
 // DTO para pagamento (alias para PaymentResponseDTO)
 export const PaymentDTO = PaymentResponseDTO;
 
 // DTO para listagem de pagamentos (array de PaymentResponseDTO)
 export const PaymentListDTO = t.Array(PaymentResponseDTO);
+
+// Tipos TypeScript para uso interno
+export type PaymentAnalyticsDTO = {
+  totalAmount: number;
+  totalCount: number;
+  successRate: number;
+  averageAmount: number;
+  byProvider: Record<string, number>;
+  byStatus: Record<string, number>;
+};

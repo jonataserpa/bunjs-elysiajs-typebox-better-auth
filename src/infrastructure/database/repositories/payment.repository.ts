@@ -39,19 +39,23 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       .orderBy(sql`${payments.createdAt} DESC`);
   }
 
-  async findByTenantIdAndStatus(tenantId: string, status: string): Promise<Payment[]> {
+  async findByTenantIdAndStatus(tenantId: string, status: string, limit = 50, offset = 0): Promise<Payment[]> {
     return await db
       .select()
       .from(payments)
       .where(and(eq(payments.tenantId, tenantId), eq(payments.status, status)))
+      .limit(limit)
+      .offset(offset)
       .orderBy(sql`${payments.createdAt} DESC`);
   }
 
-  async findByTenantIdAndProvider(tenantId: string, provider: string): Promise<Payment[]> {
+  async findByTenantIdAndProvider(tenantId: string, provider: string, limit = 50, offset = 0): Promise<Payment[]> {
     return await db
       .select()
       .from(payments)
       .where(and(eq(payments.tenantId, tenantId), eq(payments.provider, provider)))
+      .limit(limit)
+      .offset(offset)
       .orderBy(sql`${payments.createdAt} DESC`);
   }
 

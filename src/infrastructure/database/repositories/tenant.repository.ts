@@ -52,11 +52,13 @@ export class DrizzleTenantRepository implements TenantRepository {
       .offset(offset);
   }
 
-  async findByStatus(status: string): Promise<Tenant[]> {
+  async findByStatus(status: string, limit = 50, offset = 0): Promise<Tenant[]> {
     return await db
       .select()
       .from(tenants)
-      .where(and(eq(tenants.status, status), isNull(tenants.deletedAt)));
+      .where(and(eq(tenants.status, status), isNull(tenants.deletedAt)))
+      .limit(limit)
+      .offset(offset);
   }
 
   async exists(id: string): Promise<boolean> {

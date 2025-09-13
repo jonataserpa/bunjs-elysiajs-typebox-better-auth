@@ -6,6 +6,7 @@ import { cors } from '@elysiajs/cors';
 import { authRoutes } from '@/presentation/routes/auth.routes';
 import { paymentRoutes } from '@/presentation/routes/payment.routes';
 import { tenantRoutes } from '@/presentation/routes/tenant.routes';
+import { transactionRoutes } from '@/presentation/routes/transaction.routes';
 import { healthRoutes } from '@/presentation/routes/health.routes';
 
 // Importar middleware
@@ -111,6 +112,10 @@ Todos os endpoints protegidos requerem um token JWT no header:
           {
             name: 'Payments',
             description: 'Processamento de pagamentos, captura, reembolsos e consultas',
+          },
+          {
+            name: 'Transactions',
+            description: 'Gerenciamento de transações, histórico e auditoria',
           },
           {
             name: 'Tenants',
@@ -242,6 +247,9 @@ Todos os endpoints protegidos requerem um token JWT no header:
 
   // Rotas de tenant
   .use(tenantRoutes)
+
+  // Rotas de transações
+  .use(transactionRoutes)
 
   // Rota padrão
   .get('/', () => ({
