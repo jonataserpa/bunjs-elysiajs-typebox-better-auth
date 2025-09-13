@@ -1,0 +1,81 @@
+# ADR 003 – Estratégia de Multi-Tenancy na API de Pagamentos
+
+## Status
+
+Accepted
+
+## Contexto
+
+Nosso sistema precisa atender múltiplos clientes (tenants) com total isolamento lógico e capacidade de personalização por tenant. O conceito de multi-tenancy é fundamental para permitir que cada cliente:
+
+- Tenha configurações específicas (ex: gateway de pagamento, chaves de API, modo de operação);
+- Acesse somente seus próprios dados;
+- Possua segurança reforçada e isolamento de contexto;
+- Consuma recursos da API de forma escalável, observável e auditável.
+
+Optamos por uma arquitetura **multi-tenancy baseada em "shared database, isolated schema logic"**, onde:
+
+- Todos os dados estão em um único banco Postgres;
+- Cada entidade possui o campo `tenant_id` como chave de segregação;
+- Toda lógica de autenticação e autorização valida o `tenant_id` em contexto;
+- Consultas sempre filtram por `tenant_id`, com suporte a índices otimizados;
+- Os providers (ex: Stripe, Pagarme) são selecionados dinamicamente com base na configuração do tenant.
+
+## Decisão
+
+Adotamos **multi-tenancy via tenant_id contextualizado por requisição** (tenant-aware application logic). O `tenant_id` é injetado no contexto da requisição durante a autenticação, e utilizado:
+
+- Em todas as queries ao banco de dados (via Drizzle ORM + middlewares);
+- Na seleção de configurações de pagamento;
+- Na geração de logs, métricas e rastreabilidade;
+- Na geração de documentação Swagger/OpenAPI para visualização filtrada por tenant (em ADR futuro).
+
+Além disso, optamos por:
+
+- Utilizar o header `X-Tenant-ID` como fallback em ambientes internos ou testes;
+- Validar o `tenant_id` autenticado com o JWT (Better Auth) e desconsiderar headers em produção;
+- Criar middleware Elysia.js que verifica e injeta o tenant no contexto com segurança.
+
+## Justificativas
+
+- Arquitetura escalável e de manutenção simples (evita múltiplos bancos/schemas).
+- Permite observabilidade consolidada por tenant.
+- Reduz custo de infraestrutura com banco único.
+- Fácil de evoluir e testar localmente com múltiplos tenants simulados.
+
+## Alternativas Consideradas
+
+### 1. Um banco de dados por tenant (database-per-tenant)
+- Isolamento total.
+- Alta segurança.
+
+**Rejeitado porque** aumenta exponencialmente o custo operacional e dificulta escala e observabilidade.
+
+### 2. Um schema por tenant no mesmo banco (schema-per-tenant)
+- Isolamento moderado.
+
+**Rejeitado porque** complexifica a manutenção, migrações e versionamento de dados. Além disso, Drizzle ORM e o Bun não têm suporte nativo para essa abordagem no momento.
+
+## Consequências
+
+### Positivas:
+- Abordagem simples, validada por empresas SaaS.
+- Isolamento lógico confiável com baixo custo.
+- Permite fácil introdução de métricas, logs e limites por tenant.
+- Integra-se bem com autenticação JWT e Better Auth.
+
+### Negativas:
+- Risco de bugs por vazamento de dados caso filtros por `tenant_id` sejam esquecidos.
+- Requer atenção e revisão nos testes para garantir cobertura multi-tenant.
+- Migração futura para modelos mais isolados pode exigir mudanças no ORM ou estrutura.
+
+## Confiança
+
+Alta. A abordagem é amplamente adotada em aplicações SaaS modernas. Testes iniciais mostraram que a injeção e uso de `tenant_id` via contexto no Elysia.js é confiável e segura.
+
+## Ação
+
+- Criar middleware `withTenantContext` para injeção de `tenant_id`.
+- Adaptar modelos do Drizzle ORM para sempre exigir `tenant_id`.
+- Implementar testes automatizados multi-tenant.
+- Avaliar performance com muitos tenants em ambiente de staging.

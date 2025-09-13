@@ -1,0 +1,105 @@
+# ADR 001 – Escolha da Stack Tecnológica para a API de Pagamentos
+
+## Status
+
+Accepted
+
+## Context
+
+Estamos iniciando o desenvolvimento de uma API de pagamento que precisa:
+- Suportar múltiplos gateways de pagamento (Stripe e Pagarme);
+- Ser multi-tenante por padrão;
+- Ter autenticação e autorização robustas sem dependência de terceiros;
+- Suportar documentação automática via OpenAPI;
+- Ser acompanhada de uma suite de testes completa (unitário, integração e E2E);
+- Ter deploy simplificado e escalável em Kubernetes;
+- Utilizar banco de dados Postgres;
+- Atender padrões modernos de engenharia de software, com foco em performance, DX (Developer Experience) e manutenibilidade.
+
+Além disso, a aplicação deve seguir princípios arquiteturais modernos:
+- **Clean Architecture** para separação clara de responsabilidades e independência de frameworks;
+- **Domain-Driven Design (DDD)** para modelagem rica do domínio de pagamentos;
+- **Test-Driven Development (TDD)** para garantir qualidade e confiabilidade do código.
+
+Nesse contexto, diversas decisões precisaram ser tomadas para definir a stack principal da aplicação.
+
+## Decisão
+
+Optamos por construir a API utilizando o [Bun](https://bun.sh/) como runtime JavaScript moderno, com o framework [Elysia.js](https://elysiajs.com/) para HTTP e o [TypeBox](https://github.com/sinclairzx81/typebox) para definição de schemas, validação e geração automática de OpenAPI.
+
+A arquitetura seguirá os princípios de **Clean Architecture** com as seguintes camadas:
+
+- **Domain Layer**: Entidades, Value Objects, Domain Services e Interfaces (Repositories, Gateways)
+- **Application Layer**: Use Cases, Application Services e DTOs
+- **Infrastructure Layer**: Implementações concretas (Drizzle ORM, HTTP Controllers, External APIs)
+- **Presentation Layer**: Controllers HTTP (Elysia.js), DTOs de Request/Response e Validação
+
+Complementamos a stack com os seguintes componentes:
+
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/) para integração com Postgres (Infrastructure Layer).
+- **Autenticação**: [Better Auth](https://elysiajs.com/plugins/better-auth) como solução de autenticação local com suporte a multi-tenant sem depender de serviços externos.
+- **Documentação automática**: via OpenAPI gerada pelo Elysia.js + TypeBox.
+- **Testes**: suíte completa de testes com Bun (`bun test`) seguindo TDD, incluindo testes unitários, integração e E2E com performance superior.
+- **Empacotamento**: uso do Bun para gerar binário único executável.
+- **Deployment**: infraestrutura conteinerizada (Docker) com orquestração via Kubernetes (K8s).
+- **Observabilidade e métricas**: ferramentas nativas do K8s + integrações com Prometheus e Grafana (planejado para ADR futuro).
+
+## Justificativas
+
+- **Bun + Elysia.js** oferece performance superior em benchmarks comparado a Node.js, com DX excelente.
+- **TypeBox** nos permite gerar documentação, validações de schema e tipagem do lado cliente via Treaty.
+- **Better Auth** permite autenticação sem serviços externos, mantendo controle total.
+- **Drizzle ORM** é moderno, seguro e com boa integração com TypeScript.
+- **Bun permite empacotar a aplicação em binário único**, facilitando deployments em múltiplos ambientes.
+- **Bun test é extremamente rápido**, até para testes de integração/E2E, acelerando o ciclo de desenvolvimento.
+- A infraestrutura baseada em Docker + K8s permite escalabilidade, alta disponibilidade e boas práticas DevOps.
+- **Clean Architecture** garante separação clara de responsabilidades, testabilidade e independência de frameworks.
+- **DDD** permite modelagem rica do domínio de pagamentos, facilitando evolução e manutenção.
+- **TDD** garante qualidade do código, reduz bugs e facilita refatoração contínua.
+
+## Alternativas Consideradas
+
+1. **Node.js + Express + Zod**
+   - Mais maduro, mas performance e DX inferiores.
+   - Zod não gera OpenAPI automaticamente.
+   - Maior carga de configuração e boilerplate.
+
+2. **NestJS com TypeORM**
+   - Arquitetura robusta e conhecida.
+   - No entanto, tem curva de aprendizado maior e não aproveita as vantagens do Bun.
+   - TypeORM tem histórico de manutenção problemática.
+
+3. **Fastify com Node.js**
+   - Boa performance, mas não oferece binário executável como o Bun.
+   - Não integra com Treaty nativamente.
+
+## Consequências
+
+### Positivas:
+- Stack moderna, rápida e com foco em produtividade e DX.
+- Deploy simplificado com binário único.
+- Testes mais rápidos com `bun test`, mesmo em E2E.
+- Documentação gerada automaticamente com tipagem garantida.
+
+### Negativas:
+- Comunidade do Bun ainda é menor que Node.js.
+- Algumas bibliotecas legacy podem não funcionar totalmente com Bun (apesar da alta compatibilidade com APIs do Node).
+- Curva de aprendizado para equipe que nunca usou Bun ou Elysia.js.
+
+## Confiança
+
+Alta. A equipe técnica testou os componentes em provas de conceito e validou que atendem aos requisitos técnicos e de produto.
+
+## Ação
+
+- Iniciar a implementação com Bun + Elysia + TypeBox + Drizzle seguindo Clean Architecture.
+- Estruturar o projeto com as camadas: Domain, Application, Infrastructure e Presentation.
+- Implementar TDD com Bun test, começando pelos testes unitários das entidades de domínio.
+- Aplicar DDD para modelagem do domínio de pagamentos com entidades, value objects e domain services.
+- Criar ADRs complementares para:
+  - Integração com Stripe e Pagar.me
+  - Multi-tenancy
+  - Autenticação/Autorização
+  - Infraestrutura com Docker/K8s
+  - Estratégia de testes
+  - Observabilidade

@@ -1,0 +1,86 @@
+# ADR 004 – Estratégia de Autenticação e Autorização com Better Auth
+
+## Status
+
+Accepted
+
+## Contexto
+
+A API de pagamentos precisa de um mecanismo robusto de autenticação e autorização com as seguintes características:
+
+- Suporte nativo a multi-tenancy;
+- Sem dependência de serviços externos como Auth0, Firebase Auth, etc;
+- Controle granular de permissões por tipo de usuário e por tenant;
+- Compatibilidade com ambientes auto-hospedados (on-premises ou cloud);
+- Geração e verificação de JWT;
+- Facilidade de integração com Bun e Elysia.js.
+
+Dado esse contexto, a escolha do mecanismo de autenticação deve reforçar segurança sem comprometer a Developer Experience (DX).
+
+## Decisão
+
+Escolhemos utilizar o [Better Auth](https://elysiajs.com/plugins/better-auth), um plugin oficial do Elysia.js que oferece uma solução local de autenticação robusta e extensível, com os seguintes pontos:
+
+- Suporte direto à criação e verificação de tokens JWT.
+- Integração nativa com middlewares do Elysia.js.
+- Facilidade de criação de estratégias de login (ex: email/senha, chave de API).
+- Capacidade de armazenar informações do usuário autenticado e do `tenant_id` no contexto da requisição.
+- Permite extensão via hooks para lógica de autorização customizada.
+
+A estratégia adotada é:
+
+1. O cliente realiza login e recebe um JWT assinado, contendo `user_id`, `tenant_id`, `role`, `permissions`.
+2. O middleware `auth()` do Better Auth valida o JWT e injeta o `user` no contexto.
+3. Middlewares adicionais garantem que o `tenant_id` do JWT corresponda ao contexto da requisição (segurança multi-tenant).
+4. Os endpoints validam escopos de permissões conforme o `role` (ex: `admin`, `customer`, `finance`).
+
+## Justificativas
+
+- **Simplicidade**: evita a complexidade de configurar serviços externos de auth.
+- **Controle total**: mantemos controle sobre dados, regras e identidade.
+- **Segurança**: JWTs assinado localmente, verificado em cada requisição.
+- **Flexível**: fácil de estender para SSO, API keys ou OAuth futuramente.
+- **Integrado**: desenvolvido para funcionar perfeitamente com Elysia.js e Bun.
+
+## Alternativas Consideradas
+
+### 1. Utilizar Auth0 ou Firebase Auth
+- Soluções SaaS maduras e seguras.
+- Menor esforço de desenvolvimento.
+
+**Rejeitado porque**:
+- Requer integração externa e pagamento por usuário.
+- Menor controle sobre tokens e identidade.
+- Não compatível com binário único empacotado com Bun.
+
+### 2. Implementar autenticação do zero
+- Total liberdade.
+
+**Rejeitado porque**:
+- Risco de falhas de segurança.
+- Necessário reimplementar funcionalidade já existente no Better Auth.
+
+## Consequências
+
+### Positivas:
+- Total controle sobre autenticação e autorização.
+- Sem dependência de terceiros.
+- Facilidade de auditoria e extensão de políticas de acesso.
+- JWT com informações relevantes (multi-tenant, roles).
+
+### Negativas:
+- Responsabilidade de manter segurança e práticas atualizadas.
+- Gestão manual de usuários, roles e revogação de tokens.
+- Demandará mais testes de segurança (ex: brute-force, expiration, token rotation).
+
+## Confiança
+
+Alta. A equipe já utilizou Better Auth em projetos anteriores e validou em prova de conceito. Os recursos oferecidos atendem todos os critérios do projeto atual.
+
+## Ação
+
+- Configurar Better Auth com estratégia JWT.
+- Implementar fluxo de login e criação de tokens com `user_id`, `tenant_id`, `role`.
+- Criar middlewares de autorização (`requireRole`, `requireTenantMatch`).
+- Definir e documentar os níveis de acesso por role.
+- Criar testes automatizados para autenticação e autorização.

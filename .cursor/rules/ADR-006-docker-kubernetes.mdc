@@ -1,0 +1,40 @@
+# ADR 006 – Estratégia de Orquestração e Deploy com Docker e Kubernetes
+
+## Status
+
+Accepted
+
+## Contexto
+
+Nossa aplicação de pagamentos precisa ser:
+
+- **Escalável horizontalmente**;
+- **Facilmente empacotável e implantável** em ambientes distintos;
+- Compatível com práticas modernas de CI/CD;
+- Compatível com estratégias multi-tenant e alta disponibilidade;
+- Pronta para observabilidade, atualização contínua e rollback;
+- Otimizada para rodar como binário único, graças ao Bun.
+
+Dado esse contexto, decidimos sobre a estratégia de containerização, orquestração e deployment.
+
+## Decisão
+
+### 1. Dockerfile
+
+A aplicação será empacotada como **um único binário executável** usando Bun, com uma imagem Docker mínima:
+
+```Dockerfile
+# Dockerfile
+FROM oven/bun:alpine as build
+
+WORKDIR /app
+COPY . .
+RUN bun install --frozen-lockfile
+RUN bun build src/index.ts --compile --outfile bun-api
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=build /app/bun-api .
+
+EXPOSE 3000
+CMD ["./bun-api"]

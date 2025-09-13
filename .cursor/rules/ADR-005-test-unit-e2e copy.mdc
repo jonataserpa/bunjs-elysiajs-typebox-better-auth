@@ -1,0 +1,96 @@
+# ADR 005 – Estratégia de Testes (Unitários, Integração e E2E com Bun)
+
+## Status
+
+Accepted
+
+## Contexto
+
+O projeto exige uma cobertura de testes robusta que aborde os seguintes níveis:
+
+- **Testes unitários** para lógica de negócio e componentes isolados;
+- **Testes de integração** para validar comunicação entre módulos (ex: banco de dados, gateways de pagamento, autenticação);
+- **Testes end-to-end (E2E)** para garantir que os fluxos de negócio críticos estão funcionando conforme esperado, do início ao fim.
+
+Como o projeto está sendo desenvolvido com Bun + Elysia.js, e considerando o desempenho de execução de testes do Bun, precisávamos tomar uma decisão sobre o framework e a organização da suite de testes.
+
+## Decisão
+
+Adotamos a suíte de testes **nativa do Bun (`bun test`)** para todos os tipos de testes (unitários, integração e E2E), com a seguinte organização:
+
+### Organização da suite de testes:
+
+tests/
+├── unit/
+│ ├── services/
+│ ├── utils/
+├── integration/
+│ ├── db/
+│ ├── auth/
+│ ├── payments/
+├── e2e/
+│ ├── user-flow/
+│ ├── admin-flow/
+│ └── webhook-callbacks/
+
+
+- **Testes unitários** são isolados, sem dependências externas.
+- **Testes de integração** utilizam banco de dados Postgres real (via Docker) e mocks controlados dos gateways.
+- **Testes E2E** utilizam a aplicação em execução (compilada com Bun), com chamadas HTTP reais e assertivas baseadas no comportamento final do sistema.
+
+## Justificativas
+
+- `bun test` é extremamente rápido e possui suporte nativo a testes, sem dependência de Jest ou Vitest.
+- Permite rodar todos os testes com um único binário.
+- Melhor integração e performance com o runtime Bun.
+- Facilita integração com CI/CD e pipelines leves.
+
+## Alternativas Consideradas
+
+### 1. Utilizar Jest
+- Amplamente usado e testado.
+- Ecossistema maduro.
+
+**Rejeitado porque**:
+- Jest não é compatível nativamente com Bun.
+- Reintroduziria dependência do Node.js.
+- Reduziria o benefício do empacotamento e velocidade do Bun.
+
+### 2. Utilizar frameworks externos como Vitest
+- Compatível com Vite e TypeScript.
+
+**Rejeitado porque**:
+- Também não é otimizado para Bun.
+- Introduziria dependência externa desnecessária.
+
+## Consequências
+
+### Positivas:
+- Performance de testes extremamente rápida, inclusive para integração e E2E.
+- Sem necessidade de ferramentas adicionais.
+- CI/CD mais leve e rápido.
+- Melhor DX para devs com feedback instantâneo.
+
+### Negativas:
+- Menor base de comunidade/documentação para `bun test` comparado a Jest.
+- Algumas funcionalidades avançadas (ex: snapshots) ainda estão em maturação.
+- Pode haver necessidade de criar utilitários próprios (ex: mocks, fakes, setup).
+
+## Confiança
+
+Alta. A equipe testou `bun test` em fluxos completos, incluindo integração com banco e execução de comandos via terminal. O tempo de execução foi significativamente menor do que com Jest.
+
+## Ação
+
+- Padronizar estrutura de testes conforme diretórios unit/integration/e2e.
+- Criar `setup.ts` para configurar banco de dados e limpar dados antes de cada teste.
+- Criar comandos no `package.json`:
+```json
+{
+  "scripts": {
+    "test": "bun test",
+    "test:unit": "bun test ./tests/unit",
+    "test:integration": "bun test ./tests/integration",
+    "test:e2e": "bun test ./tests/e2e"
+  }
+}

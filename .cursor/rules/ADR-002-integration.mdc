@@ -1,0 +1,68 @@
+# ADR 002 – Integração com Stripe e Pagar.me na API de Pagamentos
+
+## Status
+
+Accepted
+
+## Contexto
+
+A API de pagamentos que estamos desenvolvendo precisa integrar dois gateways de pagamento: **Stripe** e **Pagar.me**. A escolha por múltiplos provedores se deu pelos seguintes fatores:
+
+- Diversidade de atuação geográfica e requisitos legais diferentes por cliente.
+- Redundância e resiliência para casos de falha em um dos serviços.
+- Liberdade para futuros ajustes de precificação, taxas e compatibilidade.
+- Suporte a clientes com contratos ou preferências distintas.
+
+Além disso, a aplicação deve ser **multi-tenante**, permitindo que diferentes clientes utilizem provedores distintos, inclusive com configurações customizadas (ex: chaves de API diferentes, modos de operação diferentes por tenant).
+
+## Decisão
+
+Decidimos adotar uma **arquitetura baseada em strategy pattern** para abstrair os métodos de pagamento dos diferentes gateways, utilizando uma camada intermediária chamada `PaymentProviderService`. Esse serviço orquestra chamadas para os providers reais (`StripeProvider`, `PagarmeProvider`) conforme as configurações do tenant.
+
+- A escolha do provider será feita dinamicamente via `tenant_id`, baseado na configuração salva no banco de dados (Postgres).
+- Toda a lógica de negócio de pagamentos estará desacoplada da implementação específica de cada provedor.
+- As credenciais dos gateways serão armazenadas de forma segura (ex: Secret Manager ou Vault), com fallback local para ambiente de desenvolvimento.
+- O modelo de dados permite armazenar múltiplas configurações por tenant, como `apiKey`, `webhookSecret`, `mode`, etc.
+
+## Justificativas
+
+- Permite escalabilidade e flexibilidade ao suportar múltiplos provedores atuais e futuros.
+- Facilita testes, pois cada provider pode ser mockado isoladamente.
+- Desacoplamento torna mais simples a manutenção e substituição de provedores.
+- Multi-tenancy se encaixa perfeitamente com o modelo de negócios visado.
+
+## Alternativas Consideradas
+
+### 1. Escolher apenas um provedor (ex: Stripe)
+- Mais simples de implementar.
+- Reduz complexidade inicial.
+
+**Rejeitado porque** não atende a necessidade de flexibilidade e resiliência. Seria um lock-in técnico e comercial.
+
+### 2. Implementar lógica condicional diretamente na camada de serviço
+- Ex: `if tenant.usesStripe() { callStripe() } else { callPagarme() }`
+
+**Rejeitado porque** essa abordagem acopla lógica de negócios com detalhes da implementação, dificultando testes, manutenção e extensibilidade.
+
+## Consequências
+
+### Positivas:
+- Extensível para novos gateways no futuro (ex: MercadoPago, Adyen).
+- Multi-tenancy respeitado e flexível.
+- Testável e aderente a boas práticas de engenharia de software.
+
+### Negativas:
+- Aumento da complexidade inicial.
+- Necessidade de gerenciar credenciais por tenant com segurança.
+- Webhooks devem ser tratados de forma diferente por gateway (necessário mapear diferentes formatos e eventos).
+
+## Confiança
+
+Alta. Já validamos as bibliotecas oficiais de Stripe e Pagar.me no Bun, com provas de conceito realizadas com sucesso. A arquitetura escolhida se mostrou flexível e robusta.
+
+## Ação
+
+- Implementar `PaymentProviderService` com suporte a Stripe e Pagar.me.
+- Definir e aplicar strategy pattern para os providers (`StripeProvider`, `PagarmeProvider`).
+- Configurar modelo `TenantPaymentConfig` no banco de dados.
+- Planejar tratamento unificado de webhooks e estrutura de logs por gateway.
