@@ -1,0 +1,113 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Prometheus scraper para métricas do próprio collector
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['0.0.0.0:8888']
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  memory_limiter:
+    limit_mib: 512
+    spike_limit_mib: 128
+    check_interval: 5s
+
+  # Filtro para remover spans desnecessários
+  filter:
+    traces:
+      span:
+        - 'attributes["http.url"] == "/health"'
+    metrics:
+      metric:
+        - 'name == "up"'
+
+  # Processador para adicionar recursos customizados
+  resource:
+    attributes:
+      - key: service.namespace
+        value: payment-system
+        action: upsert
+      - key: deployment.environment
+        value: development
+        action: upsert
+
+  # Processador para modificar nomes de métricas
+  attributes:
+    actions:
+      - key: tenant_id
+        action: insert
+        from_attribute: tenant_id
+        value: unknown
+    metrics:
+      - key: tenant_id
+        action: insert
+        from_attribute: tenant_id
+        value: unknown
+
+exporters:
+  # Exportar traces para Jaeger
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+
+  # Exportar métricas para Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: payment_api
+    const_labels:
+      service: payment-api
+      version: "1.0.0"
+
+  # Exportar logs (opcional)
+  logging:
+    loglevel: debug
+
+  # Exportar para OTLP (backup)
+  otlp:
+    endpoint: http://localhost:4317
+    tls:
+      insecure: true
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, filter, resource, attributes]
+      exporters: [jaeger, logging]
+
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch, filter, resource, attributes]
+      exporters: [prometheus, logging]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [logging]
