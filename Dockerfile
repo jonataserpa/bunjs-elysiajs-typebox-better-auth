@@ -11,10 +11,10 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 # Copiar arquivos de configuração do package
-COPY package.json bun.lockb ./
+COPY package.json ./
 
 # Instalar dependências
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copiar código fonte
 COPY . .

@@ -1,37 +1,135 @@
-version: '3.8'
-
 services:
+  # Payment API
+  payment-api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://payment_user:payment_pass@postgres:5432/payment_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - OTEL_SERVICE_NAME=payment-api
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4317/v1/traces
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4317/v1/metrics
+    depends_on:
+      - postgres
+      - redis
+      - otel-collector
+    networks:
+      - observability
+
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: payment-api-postgres
     environment:
-      POSTGRES_DB: payment_api
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
+      - POSTGRES_DB=payment_db
+      - POSTGRES_USER=payment_user
+      - POSTGRES_PASSWORD=payment_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d payment_api"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - observability
 
+  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: payment-api-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    networks:
+      - observability
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infra/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics
+      - "8889:8889"   # Prometheus exporter metrics
+    depends_on:
+      - jaeger
+      - prometheus
+    networks:
+      - observability
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - prometheus_data:/prometheus
+    networks:
+      - observability
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.1.0
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - observability
+
+  # Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # Jaeger collector HTTP
+      - "14250:14250"  # Jaeger collector gRPC
+    networks:
+      - observability
+
+  # Gatling (Load Testing)
+  gatling:
+    image: denvazh/gatling:latest
+    volumes:
+      - ./gatling-charts-highcharts-bundle-3.10.3/user-files:/opt/gatling/user-files
+      - ./gatling-charts-highcharts-bundle-3.10.3/results:/opt/gatling/results
+    environment:
+      - GATLING_HOME=/opt/gatling
+    command: ["gatling.sh", "-s", "PaymentApiSimulation"]
+    depends_on:
+      - payment-api
+    networks:
+      - observability
+    profiles:
+      - testing
 
 volumes:
   postgres_data:
   redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  observability:
+    driver: bridge

@@ -47,7 +47,7 @@ print_status "Verificando arquivos de configuração..."
 
 # Verificar se os arquivos necessários existem
 required_files=(
-    "docker-compose.yaml"
+    "docker-compose.yml"
     "infra/otel-collector-config.yaml"
     "infra/prometheus.yaml"
     "infra/grafana/provisioning/datasources/prometheus.yml"
