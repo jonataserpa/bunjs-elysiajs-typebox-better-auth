@@ -85,7 +85,6 @@ export interface AppConfig {
 export function loadConfig(): AppConfig {
   const requiredEnvVars = [
     'DATABASE_URL',
-    'REDIS_URL',
     'JWT_SECRET',
   ];
 

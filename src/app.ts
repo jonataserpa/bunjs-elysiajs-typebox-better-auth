@@ -2,24 +2,30 @@ import { Elysia } from 'elysia';
 import { swagger } from '@elysiajs/swagger';
 import { cors } from '@elysiajs/cors';
 
-// Importar rotas (quando criadas)
-// import { authRoutes } from '@/presentation/routes/auth.routes';
+// Importar rotas
+import { authRoutes } from '@/presentation/routes/auth.routes';
 // import { paymentRoutes } from '@/presentation/routes/payment.routes';
 // import { tenantRoutes } from '@/presentation/routes/tenant.routes';
 import { healthRoutes } from '@/presentation/routes/health.routes';
 
 // Importar middleware
-// import { authMiddleware } from '@/presentation/middleware/auth.middleware';
-// import { tenantMiddleware } from '@/presentation/middleware/tenant.middleware';
+import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '@/presentation/middleware/simple.middleware';
+import { logger } from '@/infrastructure/logging/Logger';
+import { appConfig } from '@/shared/config/app.config';
 
 export const app = new Elysia()
+  // Middleware global
+  .use(simpleLoggingMiddleware)
+  .use(simpleValidationMiddleware)
+  .use(simpleCorsMiddleware)
+  
   // Configurações básicas
   .use(
     cors({
-      origin: process.env.ALLOWED_ORIGINS?.split(',') || [
-        'http://localhost:3000',
-      ],
-      credentials: true,
+      origin: appConfig.cors.origin,
+      credentials: appConfig.cors.credentials,
+      methods: appConfig.cors.methods,
+      allowedHeaders: appConfig.cors.allowedHeaders,
     })
   )
 
@@ -127,13 +133,13 @@ export const app = new Elysia()
   // Rotas de health check
   .use(healthRoutes)
 
-  // Rotas de autenticação (quando implementadas)
-  // .use(authRoutes)
+  // Rotas de autenticação
+  .use(authRoutes)
 
-  // Rotas de pagamento (quando implementadas)
+  // Rotas de pagamento
   // .use(paymentRoutes)
 
-  // Rotas de tenant (quando implementadas)
+  // Rotas de tenant
   // .use(tenantRoutes)
 
   // Rota padrão

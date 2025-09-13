@@ -76,9 +76,9 @@ export class PaymentDomainService {
       case PaymentProvider.PAGARME:
         feePercentage = paymentType === 'card' ? 0.0399 : 0.0199; // 3.99% ou 1.99%
         break;
-      case PaymentProvider.MERCADOPAGO:
-        feePercentage = paymentType === 'card' ? 0.0499 : 0.0299; // 4.99% ou 2.99%
-        break;
+      // case PaymentProvider.MERCADOPAGO:
+      //   feePercentage = paymentType === 'card' ? 0.0499 : 0.0299; // 4.99% ou 2.99%
+      //   break;
       default:
         feePercentage = 0.0399; // 3.99% padrão
     }
@@ -267,9 +267,9 @@ export class PaymentDomainService {
       case PaymentProvider.PAGARME:
         expirationDays = 3; // 3 dias para Pagar.me
         break;
-      case PaymentProvider.MERCADOPAGO:
-        expirationDays = 10; // 10 dias para Mercado Pago
-        break;
+      // case PaymentProvider.MERCADOPAGO:
+      //   expirationDays = 10; // 10 dias para Mercado Pago
+      //   break;
       default:
         expirationDays = 5; // 5 dias padrão
     }

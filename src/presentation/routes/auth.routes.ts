@@ -1,0 +1,308 @@
+import { Elysia, t } from 'elysia';
+import { logger } from '@/infrastructure/logging/Logger';
+import { jwt } from '@elysiajs/jwt';
+import { appConfig } from '@/shared/config/app.config';
+import {
+  SuccessResponseDTO } from '../dto/common.dto';
+import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '../middleware/simple.middleware';
+
+/**
+ * DTOs para autenticação
+ */
+const LoginDTO = t.Object({
+  email: t.String({ format: 'email', description: 'Email do usuário' }),
+  password: t.String({ minLength: 6, description: 'Senha do usuário' }),
+  tenantId: t.String({ minLength: 1, description: 'ID do tenant' })
+});
+
+const RegisterDTO = t.Object({
+  name: t.String({ minLength: 1, maxLength: 100, description: 'Nome do usuário' }),
+  email: t.String({ format: 'email', description: 'Email do usuário' }),
+  password: t.String({ minLength: 6, description: 'Senha do usuário' }),
+  tenantId: t.String({ minLength: 1, description: 'ID do tenant' })
+});
+
+const RefreshTokenDTO = t.Object({
+  refreshToken: t.String({ description: 'Refresh token' })
+});
+
+const AuthResponseDTO = t.Object({
+  success: t.Boolean({ default: true }),
+  data: t.Object({
+    user: t.Object({
+      id: t.String(),
+      name: t.String(),
+      email: t.String(),
+      role: t.String(),
+      tenantId: t.String()
+    }),
+    tokens: t.Object({
+      accessToken: t.String(),
+      refreshToken: t.String(),
+      expiresIn: t.Number()
+    })
+  }),
+  timestamp: t.String()
+});
+
+/**
+ * Rotas de autenticação
+ */
+export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-routes' })
+  .use(simpleLoggingMiddleware)
+  .use(simpleCorsMiddleware)
+  .use(simpleValidationMiddleware)
+  .use(jwt({
+    name: 'jwt',
+    secret: appConfig.auth.jwtSecret,
+    exp: appConfig.auth.jwtExpiresIn,
+  }))
+  .derive(async ({ jwt }) => {
+    // TODO: Implementar UserRepository e AuthService
+    // const userRepository = new DrizzleUserRepository();
+    // const authService = new AuthService(userRepository);
+    
+    return {
+      // authService,
+      generateTokens: async (user: any) => {
+        const payload = {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId
+        };
+
+        const accessToken = await jwt.sign(payload);
+        const refreshToken = await jwt.sign({ ...payload, type: 'refresh' });
+
+        return {
+          accessToken,
+          refreshToken,
+          expiresIn: 3600 // 1 hora
+        };
+      }
+    };
+  })
+
+  // POST /auth/login - Login
+  .post('/login', async ({ body, generateTokens }) => {
+    try {
+      // TODO: Implementar validação de credenciais
+      // const user = await authService.validateCredentials(body.email, body.password, body.tenantId);
+      
+      // Simulação temporária
+      const user = {
+        id: 'temp-user-id',
+        name: 'Usuário Temporário',
+        email: body.email,
+        role: 'user',
+        tenantId: body.tenantId
+      };
+
+      if (!user) {
+        return {
+          success: false,
+          data: {
+            user: {
+              id: '',
+              name: '',
+              email: '',
+              role: '',
+              tenantId: ''
+            },
+            tokens: {
+              accessToken: '',
+              refreshToken: '',
+              expiresIn: 0
+            }
+          },
+          error: 'Credenciais inválidas',
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      const tokens = await generateTokens(user);
+
+      logger.info('Login realizado com sucesso', 'AuthController', {
+        userId: user.id,
+        email: user.email,
+        tenantId: user.tenantId
+      });
+
+      return {
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            tenantId: user.tenantId
+          },
+          tokens
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      logger.error('Erro no login', error as Error, 'AuthController');
+      throw error;
+    }
+  }, {
+    body: LoginDTO,
+    response: AuthResponseDTO
+  })
+
+  // POST /auth/register - Registro
+  .post('/register', async ({ body, generateTokens }) => {
+    try {
+      // TODO: Implementar criação de usuário
+      // const user = await authService.createUser(body);
+      
+      // Simulação temporária
+      const user = {
+        id: 'temp-user-id',
+        name: body.name,
+        email: body.email,
+        role: 'user',
+        tenantId: body.tenantId
+      };
+
+      const tokens = await generateTokens(user);
+
+      logger.info('Usuário registrado com sucesso', 'AuthController', {
+        userId: user.id,
+        email: user.email,
+        tenantId: user.tenantId
+      });
+
+      return {
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            tenantId: user.tenantId
+          },
+          tokens
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      logger.error('Erro no registro', error as Error, 'AuthController');
+      throw error;
+    }
+  }, {
+    body: RegisterDTO,
+    response: AuthResponseDTO
+  })
+
+  // POST /auth/refresh - Renovar token
+  .post('/refresh', async ({ body, jwt, generateTokens }) => {
+    try {
+      // TODO: Implementar validação de refresh token
+      const payload = await jwt.verify(body.refreshToken);
+      
+      if (!payload || payload.type !== 'refresh') {
+        return {
+          success: false,
+          data: {
+            user: {
+              id: '',
+              name: '',
+              email: '',
+              role: '',
+              tenantId: ''
+            },
+            tokens: {
+              accessToken: '',
+              refreshToken: '',
+              expiresIn: 0
+            }
+          },
+          error: 'Refresh token inválido',
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // TODO: Buscar usuário no banco
+      const user = {
+        id: String(payload.userId),
+        name: 'Usuário',
+        email: String(payload.email),
+        role: String(payload.role),
+        tenantId: String(payload.tenantId)
+      };
+
+      const tokens = await generateTokens(user);
+
+      return {
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            tenantId: user.tenantId
+          },
+          tokens
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      logger.error('Erro ao renovar token', error as Error, 'AuthController');
+      throw error;
+    }
+  }, {
+    body: RefreshTokenDTO,
+    response: AuthResponseDTO
+  })
+
+  // POST /auth/logout - Logout
+  .post('/logout', async ({ headers }) => {
+    try {
+      // TODO: Implementar blacklist de tokens
+      
+      logger.info('Logout realizado', 'AuthController', {
+        userId: 'unknown'
+      });
+
+      return {
+        success: true,
+        data: {
+          message: 'Logout realizado com sucesso'
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      logger.error('Erro no logout', error as Error, 'AuthController');
+      throw error;
+    }
+  }, {
+    response: SuccessResponseDTO
+  })
+
+  // GET /auth/me - Informações do usuário atual
+  .get('/me', async ({ headers }) => {
+    try {
+      // TODO: Implementar extração de token e validação de usuário
+      
+      return {
+        success: true,
+        data: {
+          id: 'temp-user-id',
+          email: 'user@example.com',
+          role: 'user',
+          tenantId: 'temp-tenant-id'
+        },
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      logger.error('Erro ao obter informações do usuário', error as Error, 'AuthController');
+      throw error;
+    }
+  }, {
+    response: SuccessResponseDTO
+  });

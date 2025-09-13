@@ -109,9 +109,10 @@ describe('PaymentDomainService', () => {
         null,
         10.00,
         'BRL',
-        PaymentProvider.MERCADOPAGO,
-        'pi_mp',
-        'Mercado Pago payment'
+        PaymentProvider.PAGARME,
+        'pi_pagarme',
+        'Mercado Pago payment',
+        {}
       );
 
       const result = PaymentDomainService.canProcessPayment(mercadopagoPayment, tenantSettings);

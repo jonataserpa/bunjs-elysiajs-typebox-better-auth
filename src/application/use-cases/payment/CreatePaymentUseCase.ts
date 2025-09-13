@@ -154,8 +154,8 @@ export class CreatePaymentUseCase {
         return `pi_stripe_${timestamp}_${random}`;
       case PaymentProvider.PAGARME:
         return `pi_pagarme_${timestamp}_${random}`;
-      case PaymentProvider.MERCADOPAGO:
-        return `pi_mercadopago_${timestamp}_${random}`;
+      // case PaymentProvider.MERCADOPAGO:
+      //   return `pi_mercadopago_${timestamp}_${random}`;
       default:
         return `pi_${provider}_${timestamp}_${random}`;
     }
