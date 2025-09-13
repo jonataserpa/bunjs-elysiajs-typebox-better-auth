@@ -11,7 +11,6 @@ import { healthRoutes } from '@/presentation/routes/health.routes';
 
 // Importar middleware
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '@/presentation/middleware/simple.middleware';
-import { logger } from '@/infrastructure/logging/Logger';
 import { appConfig } from '@/shared/config/app.config';
 
 export const app = new Elysia()

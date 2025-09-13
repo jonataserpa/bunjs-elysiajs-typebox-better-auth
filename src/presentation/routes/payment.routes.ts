@@ -4,5 +4,5 @@ import { paymentController } from '../controllers/payment.controller';
 /**
  * Rotas de pagamento
  */
-export const paymentRoutes = new Elysia({ prefix: '/api/v1', name: 'payment-routes' })
+export const paymentRoutes = new Elysia({ name: 'payment-routes' })
   .use(paymentController);
