@@ -30,9 +30,9 @@ class PaymentApiSimulation extends Simulation {
     .exec(
       http("Login Request")
         .post("/api/v1/auth/login")
-        .body(StringBody(s"""{"email": "${"$"}{email}", "password": "${"$"}{password}"}"""))
+        .body(StringBody(s"""{"email": "${"$"}{email}", "password": "${"$"}{password}", "tenantId": "${"$"}{tenantId}"}"""))
         .check(status.in(200, 401, 422))
-        .check(jsonPath("$.data.accessToken").optional.saveAs("accessToken"))
+        .check(jsonPath("$.data.tokens.accessToken").optional.saveAs("accessToken"))
     )
     .pause(1.second)
     .doIf(session => session("accessToken").asOption[String].isDefined) {

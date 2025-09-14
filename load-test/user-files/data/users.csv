@@ -1,4 +1,4 @@
-email,password
-admin@example.com,admin123
-user@example.com,password123
-test@example.com,test123
+email,password,tenantId
+admin@example.com,admin123,tenant-1
+user@example.com,password123,tenant-2
+test@example.com,test123,tenant-3
