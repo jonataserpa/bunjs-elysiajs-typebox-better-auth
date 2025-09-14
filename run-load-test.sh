@@ -1,65 +1,15 @@
 #!/usr/bin/env bash
 
-# Script de teste de carga para Payment API usando Gatling
+# Script de teste de carga para Payment API usando Gatling via Docker
 # Testa os endpoints: /login, /payments, /transactions
 
-GATLING_BIN_DIR=./gatling-charts-highcharts-bundle-3.10.3
-RESULTS_WORKSPACE="$(pwd)/load-test/user-files/results"
-GATLING_BIN_DIR=$GATLING_BIN_DIR/bin
-GATLING_WORKSPACE="$(pwd)/load-test/user-files"
-
-runGatling() {
-    sh $GATLING_BIN_DIR/gatling.sh -rm local -s PaymentApiLoadTestSimulation \
-    -rd "Payment API Load Test - Observabilidade" \
-    -rf $RESULTS_WORKSPACE \
-    -sf "$GATLING_WORKSPACE/simulations"
-}
-
-startTest() {
-    echo "🚀 Iniciando teste de carga da Payment API..."
-    echo "📊 Endpoints a serem testados:"
-    echo "   - POST /api/v1/auth/login"
-    echo "   - GET /api/v1/payments"
-    echo "   - GET /api/v1/transactions"
-    echo "   - GET /health"
-    echo ""
-    
-    for i in {1..3}; do
-        echo "🔄 Tentativa $i - Aquecendo a aplicação..."
-        
-        # Aquecer a aplicação com algumas requisições
-        curl --fail -s http://localhost:3000/health > /dev/null && \
-        curl --fail -s http://localhost:3000/api/v1/auth/me > /dev/null && \
-        echo "✅ Aplicação aquecida!" && \
-        runGatling && \
-        break || sleep 3;
-    done
-    
-    echo ""
-    echo "📈 Teste de carga concluído!"
-    echo "🔍 Verifique os resultados em: $RESULTS_WORKSPACE"
-    echo "📊 Verifique as métricas no Grafana: http://localhost:3001"
-    echo "🔍 Verifique os traces no Jaeger: http://localhost:16686"
-}
-
-# Verificar se o Gatling está instalado
-if [ ! -d "$GATLING_BIN_DIR" ]; then
-    echo "❌ Gatling não encontrado em $GATLING_BIN_DIR"
-    echo "📥 Baixando Gatling..."
-    
-    # Criar diretório se não existir
-    mkdir -p gatling-charts-highcharts-bundle-3.10.3
-    
-    # Baixar Gatling (versão 3.10.3)
-    curl -L -o gatling-charts-highcharts-bundle-3.10.3.zip \
-        "https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.10.3/gatling-charts-highcharts-bundle-3.10.3-bundle.zip"
-    
-    # Extrair
-    unzip -q gatling-charts-highcharts-bundle-3.10.3.zip
-    rm gatling-charts-highcharts-bundle-3.10.3.zip
-    
-    echo "✅ Gatling instalado com sucesso!"
-fi
+echo "🚀 Iniciando teste de carga da Payment API com Gatling..."
+echo "📊 Endpoints a serem testados:"
+echo "   - POST /api/v1/auth/login"
+echo "   - GET /api/v1/payments"
+echo "   - GET /api/v1/transactions"
+echo "   - GET /health"
+echo ""
 
 # Verificar se a aplicação está rodando
 echo "🔍 Verificando se a aplicação está rodando..."
@@ -67,7 +17,7 @@ if curl -s http://localhost:3000/health > /dev/null; then
     echo "✅ Payment API está rodando em http://localhost:3000"
 else
     echo "❌ Payment API não está rodando!"
-    echo "🚀 Execute: docker-compose up -d"
+    echo "🚀 Execute: docker-compose up -d payment-api"
     exit 1
 fi
 
@@ -92,5 +42,23 @@ else
 fi
 
 echo ""
-echo "🎯 Iniciando teste de carga..."
-startTest
+echo "🎯 Iniciando teste de carga com Gatling..."
+
+# Aguardar um pouco para garantir que a aplicação está estável
+echo "⏳ Aguardando estabilização da aplicação..."
+sleep 10
+
+# Executar o teste de carga com Gatling
+echo "🚀 Executando Gatling Load Test..."
+docker-compose --profile testing up gatling
+
+echo ""
+echo "📈 Teste de carga concluído!"
+echo "📊 Verifique os resultados em: ./load-test/results/"
+echo "📊 Verifique as métricas no Grafana: http://localhost:3001"
+echo "🔍 Verifique os traces no Jaeger: http://localhost:16686"
+
+# Mostrar os arquivos de resultado mais recentes
+echo ""
+echo "📋 Resultados mais recentes:"
+ls -la load-test/results/ | tail -5

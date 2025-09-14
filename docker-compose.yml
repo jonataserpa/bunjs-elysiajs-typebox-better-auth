@@ -126,11 +126,11 @@ services:
   gatling:
     image: denvazh/gatling:latest
     volumes:
-      - ./gatling-charts-highcharts-bundle-3.10.3/user-files:/opt/gatling/user-files
-      - ./gatling-charts-highcharts-bundle-3.10.3/results:/opt/gatling/results
+      - ./load-test/user-files:/opt/gatling/user-files
+      - ./load-test/results:/opt/gatling/results
     environment:
       - GATLING_HOME=/opt/gatling
-    command: ["gatling.sh", "-s", "PaymentApiSimulation"]
+    command: ["gatling.sh", "-s", "simulations.PaymentApiSimulation", "-rf", "/opt/gatling/results"]
     depends_on:
       - payment-api
     networks:
