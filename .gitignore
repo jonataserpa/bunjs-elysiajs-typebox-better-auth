@@ -148,6 +148,17 @@ test-results/
 playwright-report/
 test-results.xml
 
+# Load testing results
+load-test/results/
+load-test/user-files/results/
+*.html
+*.js
+*.css
+*.png
+*.jpg
+*.svg
+*.ico
+
 # Temporary files
 *.temp
 *.tmp

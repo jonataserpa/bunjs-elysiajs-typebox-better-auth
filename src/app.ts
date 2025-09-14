@@ -281,11 +281,15 @@ Todos os endpoints protegidos requerem um token JWT no header:
       const now = Date.now();
       const timeSinceStart = (now - startTime) / 1000; // segundos desde o início
       
+      console.log(`📊 Gerando métricas - Tempo desde início: ${timeSinceStart.toFixed(2)}s`);
+      
       // Simular métricas baseadas no tempo para mostrar variação
       const baseRequests = Math.floor(timeSinceStart * 0.5); // ~0.5 req/s
       const healthRequests = baseRequests + Math.floor(Math.sin(timeSinceStart / 10) * 5);
       const paymentRequests = baseRequests + Math.floor(Math.cos(timeSinceStart / 15) * 3);
       const authRequests = baseRequests + Math.floor(Math.sin(timeSinceStart / 20) * 4);
+      
+      console.log(`📈 Métricas calculadas: Health=${healthRequests}, Payments=${paymentRequests}, Auth=${authRequests}`);
       
       // Métricas de tempo de resposta variáveis
       const avgResponseTime = 50 + Math.sin(timeSinceStart / 5) * 20; // 30-70ms

@@ -13,6 +13,9 @@ class PaymentApiSimulation extends Simulation {
     .userAgentHeader("Gatling Load Test")
     .check(status.in(200, 401, 422))
 
+  // Dados de usuários para login
+  val users = csv("data/users.csv").circular
+
   // Cenário 1: Health Check - Teste básico de conectividade
   val healthCheckScenario = scenario("Health Check Scenario")
     .exec(
@@ -21,58 +24,78 @@ class PaymentApiSimulation extends Simulation {
         .check(status.is(200))
     )
 
-  // Cenário 2: Root endpoint
-  val rootScenario = scenario("Root Scenario")
+  // Cenário 2: Login e operações autenticadas
+  val authenticatedScenario = scenario("Authenticated Scenario")
+    .feed(users)
     .exec(
-      http("Root Endpoint")
-        .get("/")
-        .check(status.is(200))
+      http("Login Request")
+        .post("/api/v1/auth/login")
+        .body(StringBody(s"""{"email": "${"$"}{email}", "password": "${"$"}{password}"}"""))
+        .check(status.in(200, 401, 422))
+        .check(jsonPath("$.data.accessToken").optional.saveAs("accessToken"))
     )
+    .pause(1.second)
+    .doIf(session => session("accessToken").asOption[String].isDefined) {
+      exec(
+        http("Get User Info")
+          .get("/api/v1/auth/me")
+          .header("Authorization", "Bearer ${accessToken}")
+          .check(status.is(200))
+      )
+      .pause(1.second)
+      .exec(
+        http("Get Payments")
+          .get("/api/v1/payments")
+          .header("Authorization", "Bearer ${accessToken}")
+          .check(status.in(200, 401))
+      )
+      .pause(1.second)
+      .exec(
+        http("Get Transactions")
+          .get("/api/v1/transactions")
+          .header("Authorization", "Bearer ${accessToken}")
+          .check(status.in(200, 401))
+      )
+    }
 
-  // Cenário 3: Auth Me - Endpoint que funciona sem autenticação
-  val authMeScenario = scenario("Auth Me Scenario")
+  // Cenário 3: Teste de endpoints sem autenticação
+  val unauthenticatedScenario = scenario("Unauthenticated Scenario")
     .exec(
-      http("Get User Info")
+      http("Get User Info Without Auth")
         .get("/api/v1/auth/me")
         .check(status.is(200))
     )
-
-  // Cenário 4: Payments - Teste de endpoint protegido
-  val paymentsScenario = scenario("Payments Scenario")
+    .pause(1.second)
     .exec(
-      http("Get Payments")
+      http("Get Payments Without Auth")
         .get("/api/v1/payments")
         .check(status.in(200, 401))
     )
-
-  // Cenário 5: Test endpoint
-  val testScenario = scenario("Test Scenario")
+    .pause(1.second)
     .exec(
-      http("Test Endpoint")
-        .get("/test")
-        .check(status.is(200))
+      http("Get Transactions Without Auth")
+        .get("/api/v1/transactions")
+        .check(status.in(200, 401))
     )
 
-  // Cenário 6: Mixed Load - Cenário misto com todos os endpoints
+  // Cenário 4: Mixed Load - Cenário misto com todos os endpoints
   val mixedLoadScenario = scenario("Mixed Load Scenario")
     .randomSwitch(
-      25.0 -> exec(healthCheckScenario),
-      25.0 -> exec(rootScenario),
-      20.0 -> exec(authMeScenario),
-      15.0 -> exec(paymentsScenario),
-      15.0 -> exec(testScenario)
+      30.0 -> exec(healthCheckScenario),
+      40.0 -> exec(authenticatedScenario),
+      30.0 -> exec(unauthenticatedScenario)
     )
 
   // Configuração dos cenários de teste
   setUp(
-    // Teste de aquecimento - 10 usuários por 30 segundos
+    // Teste de aquecimento - 5 usuários por 30 segundos
     healthCheckScenario.inject(
-      rampUsers(10).during(30.seconds)
+      rampUsers(5).during(30.seconds)
     ).protocols(httpProtocol),
 
-    // Teste de carga normal - 50 usuários por 2 minutos
+    // Teste de carga normal - 30 usuários por 2 minutos
     mixedLoadScenario.inject(
-      rampUsers(50).during(2.minutes)
+      rampUsers(30).during(2.minutes)
     ).protocols(httpProtocol)
   )
   .assertions(

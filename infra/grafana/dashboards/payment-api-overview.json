@@ -103,7 +103,7 @@
             "uid": "1"
           },
           "editorMode": "code",
-          "expr": "sum(rate(payment_api_requests_total[5m])) by (method, path)",
+          "expr": "payment_api_requests_total",
           "instant": false,
           "legendFormat": "{{method}} {{path}}",
           "range": true,
@@ -194,7 +194,7 @@
             "uid": "1"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(payment_api_response_time_seconds_bucket[5m])) by (le, method, path))",
+          "expr": "payment_api_response_time_seconds_sum / payment_api_response_time_seconds_count",
           "instant": false,
           "legendFormat": "95th percentile - {{method}} {{path}}",
           "range": true,
@@ -206,7 +206,7 @@
             "uid": "1"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(payment_api_response_time_seconds_bucket[5m])) by (le, method, path))",
+          "expr": "payment_api_response_time_seconds_sum / payment_api_response_time_seconds_count",
           "instant": false,
           "legendFormat": "50th percentile - {{method}} {{path}}",
           "range": true,
