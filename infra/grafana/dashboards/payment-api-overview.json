@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -100,7 +100,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "sum(rate(payment_api_requests_total[5m])) by (method, path)",
@@ -116,7 +116,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -191,7 +191,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum(rate(payment_api_response_time_seconds_bucket[5m])) by (le, method, path))",
@@ -203,7 +203,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.50, sum(rate(payment_api_response_time_seconds_bucket[5m])) by (le, method, path))",
@@ -219,7 +219,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -266,7 +266,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "sum(payment_api_payments_total) by (status)",
@@ -282,7 +282,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -329,7 +329,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "sum(payment_api_payments_total) by (provider)",
@@ -345,7 +345,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -420,7 +420,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "sum(payment_api_payments_total) by (tenant_id)",
@@ -436,7 +436,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "1"
       },
       "fieldConfig": {
         "defaults": {
@@ -511,7 +511,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "1"
           },
           "editorMode": "code",
           "expr": "sum(payment_api_http_errors_total) by (status_code, method, path)",
