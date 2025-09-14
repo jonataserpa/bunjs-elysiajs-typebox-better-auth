@@ -1,10 +1,13 @@
-// Versão simplificada do OpenTelemetry para Bun.js
+// Configuração do OpenTelemetry para Bun.js + Elysia
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 
 // Configuração do OpenTelemetry para Payment API
 export function initializeOpenTelemetry() {
@@ -25,16 +28,43 @@ export function initializeOpenTelemetry() {
     url: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://otel-collector:4318/v1/metrics',
   });
 
-  // Configuração do SDK (versão simplificada para Bun.js)
+  // Configuração do SDK para Bun.js + Elysia
   const sdk = new NodeSDK({
     resource,
     traceExporter,
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
-      exportIntervalMillis: 30000, // Exporta métricas a cada 30 segundos
+      exportIntervalMillis: 1000, // Exporta métricas a cada 30 segundos
     }),
-    // Sem instrumentações automáticas para evitar conflitos com Bun.js
-    instrumentations: [],
+    // Instrumentações específicas para Bun.js
+    instrumentations: [
+      // Usar instrumentações automáticas com configurações específicas
+      getNodeAutoInstrumentations({
+        // Desabilitar instrumentações que não funcionam bem com Bun
+        '@opentelemetry/instrumentation-fs': {
+          enabled: true,
+        },
+        '@opentelemetry/instrumentation-net': {
+          enabled: true,
+        },
+        // Manter instrumentação HTTP ativa
+        '@opentelemetry/instrumentation-http': {
+          enabled: true,
+          requestHook: (span, request) => {
+            const url = (request as any).url || (request as any).path || '';
+            span.setAttributes({
+              'http.url': url,
+              'http.method': (request as any).method || 'GET',
+            });
+          },
+          responseHook: (span, response) => {
+            span.setAttributes({
+              'http.status_code': (response as any).statusCode || 200,
+            });
+          },
+        },
+      }),
+    ],
   });
 
   // Inicializar o SDK

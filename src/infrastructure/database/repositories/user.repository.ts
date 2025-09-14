@@ -1,8 +1,8 @@
 import { eq, and, count, sql, isNull } from 'drizzle-orm';
 import { db } from '../connection';
 import { users } from '../schema';
-import type { UserRepository } from '@/application/interfaces/repositories/user.repository.interface';
-import type { User, NewUser } from '@/infrastructure/database/schema';
+import type { UserRepository } from '../../../application/interfaces/repositories/user.repository.interface';
+import type { User, NewUser } from '../schema';
 
 export class DrizzleUserRepository implements UserRepository {
   async create(data: NewUser): Promise<User> {

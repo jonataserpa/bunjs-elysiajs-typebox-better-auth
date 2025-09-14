@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { logger } from '@/infrastructure/logging/Logger';
+import { logger } from '../../infrastructure/logging/Logger';
 import { jwt } from '@elysiajs/jwt';
-import { appConfig } from '@/shared/config/app.config';
+import { appConfig } from '../../shared/config/app.config';
 import {
   SuccessResponseDTO } from '../dto/common.dto';
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '../middleware/simple.middleware';

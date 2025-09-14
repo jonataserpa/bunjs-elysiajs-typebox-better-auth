@@ -1,43 +1,32 @@
-# Use a imagem oficial do Bun
-FROM oven/bun:1.0.29-alpine
+# Use the official Bun base image
+FROM oven/bun:1.1.30-slim as base
 
-# Definir diretório de trabalho
+# Set working directory
 WORKDIR /app
 
-# Instalar dependências do sistema necessárias para OpenTelemetry
-RUN apk add --no-cache \
-    ca-certificates \
-    curl \
-    && rm -rf /var/cache/apk/*
-
-# Copiar arquivos de configuração do package
+# Copy only package files first for caching dependencies
 COPY package.json ./
 
-# Instalar dependências
-RUN bun install
+# Install dependencies
+RUN bun install 
 
-# Copiar código fonte
+# Copy application source
 COPY . .
 
-# Criar usuário não-root para segurança
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S bunjs -u 1001
-
-# Mudar ownership dos arquivos para o usuário bunjs
-RUN chown -R bunjs:nodejs /app
-USER bunjs
-
-# Expor porta
-EXPOSE 3000
-
-# Variáveis de ambiente para OpenTelemetry
+# Set environment variables
 ENV NODE_ENV=production
 ENV OTEL_SERVICE_NAME=payment-api
 ENV OTEL_SERVICE_VERSION=1.0.0
+ENV PORT=3000
+ENV HOST=0.0.0.0
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+# Expose port
+EXPOSE 3000
 
-# Comando para iniciar a aplicação
-CMD ["bun", "run", "start"]
+# Debug: List files and check structure
+RUN echo "=== Arquivos no diretório ===" && ls -la
+RUN echo "=== Estrutura src ===" && ls -la src/
+RUN echo "=== Verificando se index.ts existe ===" && ls -la src/index.ts
+
+# Run the application
+CMD ["bun", "run", "src/index.ts"]

@@ -3,18 +3,20 @@ import { swagger } from '@elysiajs/swagger';
 import { cors } from '@elysiajs/cors';
 
 // Importar rotas
-import { authRoutes } from '@/presentation/routes/auth.routes';
-import { paymentRoutes } from '@/presentation/routes/payment.routes';
-import { tenantRoutes } from '@/presentation/routes/tenant.routes';
-import { transactionRoutes } from '@/presentation/routes/transaction.routes';
-import { healthRoutes } from '@/presentation/routes/health.routes';
+import { authRoutes } from './presentation/routes/auth.routes';
+import { paymentRoutes } from './presentation/routes/payment.routes';
+import { tenantRoutes } from './presentation/routes/tenant.routes';
+import { transactionRoutes } from './presentation/routes/transaction.routes';
+import { healthRoutes } from './presentation/routes/health.routes';
 
 // Importar middleware
-import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '@/presentation/middleware/simple.middleware';
-import { appConfig } from '@/shared/config/app.config';
+import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from './presentation/middleware/simple.middleware';
+import { otelTracingMiddleware } from './presentation/middleware/otel.middleware';
+import { appConfig } from './shared/config/app.config';
 
 export const app = new Elysia()
   // Middleware global
+  .use(otelTracingMiddleware)
   .use(simpleLoggingMiddleware)
   .use(simpleValidationMiddleware)
   .use(simpleCorsMiddleware)
@@ -263,6 +265,61 @@ Todos os endpoints protegidos requerem um token JWT no header:
   .get('/favicon.ico', ({ set }) => {
     set.status = 204;
     return;
+  })
+
+  // Endpoint de métricas para Prometheus
+  .get('/metrics', ({ set }) => {
+    set.headers = {
+      'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+    };
+    return '# Métricas da Payment API\n# Este endpoint será usado pelo Prometheus\n';
+  })
+
+  // Endpoint simples para testar
+  .get('/test', () => {
+    console.log('🔍 Endpoint /test chamado');
+    return {
+      message: 'Test endpoint working',
+      timestamp: new Date().toISOString(),
+    };
+  })
+
+  // Endpoint para testar traces
+  .get('/test-trace', async () => {
+    console.log('🔍 Testando criação de trace...');
+    
+    try {
+      const { trace } = await import('@opentelemetry/api');
+      console.log('✅ OpenTelemetry API importado');
+      
+      const tracer = trace.getTracer('payment-api-test');
+      console.log('✅ Tracer criado');
+      
+      const span = tracer.startSpan('test-span');
+      console.log('✅ Span iniciado');
+      
+      span.setAttributes({
+        'test.attribute': 'test-value',
+        'test.timestamp': new Date().toISOString(),
+      });
+      
+      span.end();
+      console.log('✅ Span finalizado');
+      
+      return {
+        message: 'Test trace created successfully',
+        timestamp: new Date().toISOString(),
+        status: 'success'
+      };
+    } catch (error) {
+      console.error('❌ Error creating trace:', error);
+      return {
+        message: 'Error creating trace',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        status: 'error'
+      };
+    }
   })
 
   // Middleware de 404 para rotas não encontradas

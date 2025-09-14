@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { DrizzleTransactionRepository } from '@/infrastructure/database/repositories/transaction.repository';
+import { DrizzleTransactionRepository } from '../../infrastructure/database/repositories/transaction.repository';
 import { 
   TransactionListResponseDTO,
   TransactionResponseResponseDTO,

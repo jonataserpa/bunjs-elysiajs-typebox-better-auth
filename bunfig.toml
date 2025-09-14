@@ -14,3 +14,7 @@ coverageDir = "./coverage"
 # Configurações de execução
 hot = true
 watch = true
+
+[install]
+# Configurações de path mapping
+preinstall = []

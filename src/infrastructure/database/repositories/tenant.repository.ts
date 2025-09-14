@@ -1,8 +1,8 @@
 import { eq, and, count, sql, isNull } from 'drizzle-orm';
 import { db } from '../connection';
 import { tenants } from '../schema';
-import type { TenantRepository } from '@/application/interfaces/repositories/tenant.repository.interface';
-import type { Tenant, NewTenant } from '@/infrastructure/database/schema';
+import type { TenantRepository } from '../../../application/interfaces/repositories/tenant.repository.interface';
+import type { Tenant, NewTenant } from '../schema';
 
 export class DrizzleTenantRepository implements TenantRepository {
   async create(data: NewTenant): Promise<Tenant> {

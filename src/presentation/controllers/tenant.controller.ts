@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { DrizzleTenantRepository } from '@/infrastructure/database/repositories/tenant.repository';
+import { DrizzleTenantRepository } from '../../infrastructure/database/repositories/tenant.repository';
 
 /**
  * Controller para operações de tenant

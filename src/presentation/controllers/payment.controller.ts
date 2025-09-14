@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { PaymentStatus } from '@/domain/enums/PaymentStatus';
-import { PaymentProvider } from '@/domain/enums/PaymentProvider';
-import { DrizzlePaymentRepository } from '@/infrastructure/database/repositories/payment.repository';
+import { PaymentStatus } from '../../domain/enums/PaymentStatus';
+import { PaymentProvider } from '../../domain/enums/PaymentProvider';
+import { DrizzlePaymentRepository } from '../../infrastructure/database/repositories/payment.repository';
 import { 
   PaymentListResponseDTO,
   PaymentResponseResponseDTO,

@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { dbConfig } from '@/shared/config/db.config';
+import { dbConfig } from '../../shared/config/db.config';
 import * as schema from './schema';
 
 // Configuração do cliente PostgreSQL

@@ -1,4 +1,4 @@
-import { LogLevel } from '@/infrastructure/logging/Logger';
+import { LogLevel } from '../../infrastructure/logging/Logger';
 
 /**
  * Configurações da aplicação

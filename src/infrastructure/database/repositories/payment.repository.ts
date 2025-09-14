@@ -1,8 +1,8 @@
 import { eq, and, count, sql, gte, lte, sum } from 'drizzle-orm';
 import { db } from '../connection';
 import { payments } from '../schema';
-import type { PaymentRepository } from '@/application/interfaces/repositories/payment.repository.interface';
-import type { Payment, NewPayment } from '@/infrastructure/database/schema';
+import type { PaymentRepository } from '../../../application/interfaces/repositories/payment.repository.interface';
+import type { Payment, NewPayment } from '../schema';
 
 export class DrizzlePaymentRepository implements PaymentRepository {
   async create(data: NewPayment): Promise<Payment> {

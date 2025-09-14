@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { logger } from '@/infrastructure/logging/Logger';
+import { logger } from '../../infrastructure/logging/Logger';
 
 /**
  * Middleware simplificado para validação
