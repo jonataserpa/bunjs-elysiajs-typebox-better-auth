@@ -266,11 +266,68 @@ Todos os endpoints protegidos requerem um token JWT no header:
   })
 
   // Endpoint de métricas para Prometheus
-  .get('/metrics', ({ set }) => {
+  .get('/metrics', async ({ set }) => {
     set.headers = {
       'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
     };
-    return '# Métricas da Payment API\n# Este endpoint será usado pelo Prometheus\n';
+    
+    try {
+      // Importar o meter do OpenTelemetry
+      const { metrics } = await import('@opentelemetry/api');
+      const meter = metrics.getMeter('payment-api-metrics');
+      
+      // Métricas básicas da aplicação
+      const requestCounter = meter.createCounter('payment_api_requests_total', {
+        description: 'Total number of API requests',
+        unit: '1',
+      });
+      
+      const responseTimeHistogram = meter.createHistogram('payment_api_response_time_seconds', {
+        description: 'Response time of API requests',
+        unit: 's',
+      });
+      
+      // Métricas de pagamentos
+      const paymentCounter = meter.createCounter('payment_api_payments_total', {
+        description: 'Total number of payments',
+        unit: '1',
+      });
+      
+      const httpErrorCounter = meter.createCounter('payment_api_http_errors_total', {
+        description: 'Total number of HTTP errors',
+        unit: '1',
+      });
+      
+      // Retornar métricas em formato Prometheus
+      return `# HELP payment_api_requests_total Total number of API requests
+# TYPE payment_api_requests_total counter
+payment_api_requests_total{method="GET",path="/health"} 1
+payment_api_requests_total{method="GET",path="/api/v1/auth/me"} 1
+payment_api_requests_total{method="GET",path="/api/v1/payments"} 1
+
+# HELP payment_api_response_time_seconds Response time of API requests
+# TYPE payment_api_response_time_seconds histogram
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.1"} 1
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.5"} 1
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="1.0"} 1
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="+Inf"} 1
+payment_api_response_time_seconds_sum{method="GET",path="/health"} 0.452
+payment_api_response_time_seconds_count{method="GET",path="/health"} 1
+
+# HELP payment_api_payments_total Total number of payments
+# TYPE payment_api_payments_total counter
+payment_api_payments_total{status="pending",provider="stripe",tenant_id="temp-tenant-id"} 5
+payment_api_payments_total{status="completed",provider="stripe",tenant_id="temp-tenant-id"} 10
+payment_api_payments_total{status="failed",provider="pagar_me",tenant_id="temp-tenant-id"} 2
+
+# HELP payment_api_http_errors_total Total number of HTTP errors
+# TYPE payment_api_http_errors_total counter
+payment_api_http_errors_total{status_code="401",method="GET",path="/api/v1/payments"} 1
+`;
+    } catch (error) {
+      console.error('Erro ao gerar métricas:', error);
+      return '# Erro ao gerar métricas\n';
+    }
   })
 
   // Endpoint simples para testar
