@@ -47,9 +47,9 @@ export const simpleCorsMiddleware = new Elysia({ name: 'simple-cors-middleware' 
 /**
  * Middleware simplificado para logs
  */
-export const simpleLoggingMiddleware = new Elysia({ name: 'simple-logging-middleware' })
+export const simpleLoggingMiddleware = new Elysia({ name: 'logging-middleware' })
   .onRequest(({ request }) => {
-    logger.info('Requisição recebida', 'SimpleLogging', {
+    logger.info('Requisição recebida', 'Logging', {
       method: request.method,
       url: request.url,
       userAgent: request.headers.get('user-agent'),

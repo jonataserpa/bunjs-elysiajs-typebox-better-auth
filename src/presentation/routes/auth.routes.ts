@@ -5,6 +5,7 @@ import { appConfig } from '../../shared/config/app.config';
 import {
   SuccessResponseDTO } from '../dto/common.dto';
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from '../middleware/simple.middleware';
+import { TracingUtil } from '../../shared/utils/tracing.util';
 
 /**
  * DTOs para autenticação
@@ -86,7 +87,22 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
 
   // POST /auth/login - Login
   .post('/login', async ({ body, generateTokens }) => {
+    const span = TracingUtil.createHttpSpan(
+      'POST /api/v1/auth/login',
+      'POST',
+      '/api/v1/auth/login',
+      {
+        'auth.tenant_id': body.tenantId,
+        'auth.email': body.email
+      }
+    );
+
     try {
+      span.addEvent('auth.login.started', {
+        email: body.email,
+        tenantId: body.tenantId
+      });
+
       // TODO: Implementar validação de credenciais
       // const user = await authService.validateCredentials(body.email, body.password, body.tenantId);
       
@@ -100,6 +116,9 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
       };
 
       if (!user) {
+        span.setStatus(401, new Error('Credenciais inválidas'));
+        span.end();
+        
         return {
           success: false,
           data: {
@@ -121,13 +140,25 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         };
       }
 
+      span.addEvent('auth.credentials.validated', {
+        userId: user.id,
+        userRole: user.role
+      });
+
       const tokens = await generateTokens(user);
+
+      span.addEvent('auth.tokens.generated', {
+        tokenType: 'access_refresh'
+      });
 
       logger.info('Login realizado com sucesso', 'AuthController', {
         userId: user.id,
         email: user.email,
         tenantId: user.tenantId
       });
+
+      span.setStatus(200);
+      span.end();
 
       return {
         success: true,
@@ -144,6 +175,8 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      span.setStatus(500, error as Error);
+      span.end();
       logger.error('Erro no login', error as Error, 'AuthController');
       throw error;
     }
@@ -159,7 +192,24 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
 
   // POST /auth/register - Registro
   .post('/register', async ({ body, generateTokens }) => {
+    const span = TracingUtil.createHttpSpan(
+      'POST /api/v1/auth/register',
+      'POST',
+      '/api/v1/auth/register',
+      {
+        'auth.tenant_id': body.tenantId,
+        'auth.email': body.email,
+        'user.name': body.name
+      }
+    );
+
     try {
+      span.addEvent('auth.register.started', {
+        email: body.email,
+        tenantId: body.tenantId,
+        userName: body.name
+      });
+
       // TODO: Implementar criação de usuário
       // const user = await authService.createUser(body);
       
@@ -172,13 +222,25 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         tenantId: body.tenantId
       };
 
+      span.addEvent('auth.user.created', {
+        userId: user.id,
+        userRole: user.role
+      });
+
       const tokens = await generateTokens(user);
+
+      span.addEvent('auth.tokens.generated', {
+        tokenType: 'access_refresh'
+      });
 
       logger.info('Usuário registrado com sucesso', 'AuthController', {
         userId: user.id,
         email: user.email,
         tenantId: user.tenantId
       });
+
+      span.setStatus(201);
+      span.end();
 
       return {
         success: true,
@@ -195,6 +257,8 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      span.setStatus(500, error as Error);
+      span.end();
       logger.error('Erro no registro', error as Error, 'AuthController');
       throw error;
     }
@@ -210,11 +274,22 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
 
   // POST /auth/refresh - Renovar token
   .post('/refresh', async ({ body, jwt, generateTokens }) => {
+    const span = TracingUtil.createHttpSpan(
+      'POST /api/v1/auth/refresh',
+      'POST',
+      '/api/v1/auth/refresh'
+    );
+
     try {
+      span.addEvent('auth.refresh.started');
+
       // TODO: Implementar validação de refresh token
       const payload = await jwt.verify(body.refreshToken);
       
       if (!payload || payload.type !== 'refresh') {
+        span.setStatus(401, new Error('Refresh token inválido'));
+        span.end();
+        
         return {
           success: false,
           data: {
@@ -236,6 +311,11 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         };
       }
 
+      span.addEvent('auth.refresh.token_validated', {
+        userId: String(payload.userId),
+        userEmail: String(payload.email)
+      });
+
       // TODO: Buscar usuário no banco
       const user = {
         id: String(payload.userId),
@@ -246,6 +326,13 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
       };
 
       const tokens = await generateTokens(user);
+
+      span.addEvent('auth.tokens.refreshed', {
+        tokenType: 'access_refresh'
+      });
+
+      span.setStatus(200);
+      span.end();
 
       return {
         success: true,
@@ -262,6 +349,8 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      span.setStatus(500, error as Error);
+      span.end();
       logger.error('Erro ao renovar token', error as Error, 'AuthController');
       throw error;
     }
@@ -277,12 +366,25 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
 
   // POST /auth/logout - Logout
   .post('/logout', async ({ headers }) => {
+    const span = TracingUtil.createHttpSpan(
+      'POST /api/v1/auth/logout',
+      'POST',
+      '/api/v1/auth/logout'
+    );
+
     try {
+      span.addEvent('auth.logout.started');
+
       // TODO: Implementar blacklist de tokens
+      
+      span.addEvent('auth.logout.completed');
       
       logger.info('Logout realizado', 'AuthController', {
         userId: 'unknown'
       });
+
+      span.setStatus(200);
+      span.end();
 
       return {
         success: true,
@@ -292,6 +394,8 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      span.setStatus(500, error as Error);
+      span.end();
       logger.error('Erro no logout', error as Error, 'AuthController');
       throw error;
     }
@@ -306,8 +410,24 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
 
   // GET /auth/me - Informações do usuário atual
   .get('/me', async ({ headers }) => {
+    const span = TracingUtil.createHttpSpan(
+      'GET /api/v1/auth/me',
+      'GET',
+      '/api/v1/auth/me'
+    );
+
     try {
+      span.addEvent('auth.me.started');
+
       // TODO: Implementar extração de token e validação de usuário
+      
+      span.addEvent('auth.me.user_info_retrieved', {
+        userId: 'temp-user-id',
+        userRole: 'user'
+      });
+
+      span.setStatus(200);
+      span.end();
       
       return {
         success: true,
@@ -320,6 +440,8 @@ export const authRoutes = new Elysia({ prefix: '/api/v1/auth', name: 'auth-route
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      span.setStatus(500, error as Error);
+      span.end();
       logger.error('Erro ao obter informações do usuário', error as Error, 'AuthController');
       throw error;
     }

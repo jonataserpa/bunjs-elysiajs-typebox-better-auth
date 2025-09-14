@@ -10,6 +10,7 @@ import {
   type PaymentDTO,
   type PaymentAnalyticsDTO
 } from '../dto/payment.dto';
+import { TracingUtil } from '../../shared/utils/tracing.util';
 
 /**
  * Controller para operações de pagamento
@@ -18,10 +19,32 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
 
   // GET /payments - Listar pagamentos
   .get('/', async ({ query, headers }) => {
+    const span = TracingUtil.createHttpSpan(
+      'GET /api/v1/payments',
+      'GET',
+      '/api/v1/payments',
+      {
+        'payment.page': query.page || 1,
+        'payment.limit': query.limit || 20,
+        'payment.status': query.status || 'all',
+        'payment.provider': query.provider || 'all'
+      }
+    );
+
     try {
+      span.addEvent('payment.list.started', {
+        page: query.page || 1,
+        limit: query.limit || 20,
+        hasStatusFilter: !!query.status,
+        hasProviderFilter: !!query.provider
+      });
+
       // Extrair tenantID do JWT manualmente
       const authHeader = headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        span.setStatus(401, new Error('Token de autorização não fornecido'));
+        span.end();
+        
         return {
           success: false,
           error: 'Token de autorização não fornecido',
@@ -36,6 +59,9 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
       const tenantId = payload.tenantId;
 
       if (!tenantId) {
+        span.setStatus(401, new Error('TenantID não encontrado no token'));
+        span.end();
+        
         return {
           success: false,
           error: 'TenantID não encontrado no token',
@@ -44,6 +70,14 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
           timestamp: new Date().toISOString()
         };
       }
+
+      span.addEvent('payment.tenant.validated', {
+        tenantId: tenantId
+      });
+
+      const dbSpan = TracingUtil.createDbSpan('SELECT', 'payments', {
+        'db.tenant_id': tenantId
+      });
 
       const paymentRepository = new DrizzlePaymentRepository();
       const page = query.page || 1;
@@ -59,22 +93,35 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
         payments = await paymentRepository.findByTenantIdAndStatus(tenantId, query.status);
         payments = payments.filter(p => p.provider === query.provider).slice(offset, offset + limit);
         total = await paymentRepository.countByTenantIdAndStatus(tenantId, query.status);
+        dbSpan.addEvent('db.filter.applied', { filter: 'status_and_provider' });
       } else if (query.status) {
         payments = await paymentRepository.findByTenantIdAndStatus(tenantId, query.status, limit, offset);
         total = await paymentRepository.countByTenantIdAndStatus(tenantId, query.status);
+        dbSpan.addEvent('db.filter.applied', { filter: 'status' });
       } else if (query.provider) {
         payments = await paymentRepository.findByTenantIdAndProvider(tenantId, query.provider, limit, offset);
         total = await paymentRepository.countByTenantId(tenantId);
+        dbSpan.addEvent('db.filter.applied', { filter: 'provider' });
       } else if (query.startDate && query.endDate) {
         const startDate = new Date(query.startDate);
         const endDate = new Date(query.endDate);
         payments = await paymentRepository.findByDateRange(startDate, endDate, tenantId);
         total = payments.length;
+        dbSpan.addEvent('db.filter.applied', { filter: 'date_range' });
       } else {
         // Buscar pagamentos do tenant específico
         payments = await paymentRepository.findByTenantId(tenantId, limit, offset);
         total = await paymentRepository.countByTenantId(tenantId);
+        dbSpan.addEvent('db.filter.applied', { filter: 'tenant_only' });
       }
+      
+      dbSpan.setStatus(true);
+      dbSpan.end();
+
+      span.addEvent('payment.list.db_query_completed', {
+        paymentsFound: payments.length,
+        totalCount: total
+      });
       
       // Converter para DTOs (dados brutos do banco)
       const paymentDTOs = payments.map(payment => ({
@@ -97,6 +144,14 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
       
       const totalPages = Math.ceil(total / limit);
       
+      span.addEvent('payment.list.response_ready', {
+        paymentsReturned: paymentDTOs.length,
+        totalPages: totalPages
+      });
+
+      span.setStatus(200);
+      span.end();
+      
       return {
         success: true,
         data: paymentDTOs,
@@ -104,6 +159,11 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
         timestamp: new Date().toISOString()
       };
     } catch (error) {
+      dbSpan.setStatus(false, error as Error);
+      dbSpan.end();
+      span.setStatus(500, error as Error);
+      span.end();
+      
       console.error('Erro ao listar pagamentos:', error);
       return {
         success: false,

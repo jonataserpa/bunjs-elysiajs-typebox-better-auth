@@ -11,12 +11,10 @@ import { healthRoutes } from './presentation/routes/health.routes';
 
 // Importar middleware
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from './presentation/middleware/simple.middleware';
-import { otelTracingMiddleware } from './presentation/middleware/otel.middleware';
 import { appConfig } from './shared/config/app.config';
 
 export const app = new Elysia()
   // Middleware global
-  .use(otelTracingMiddleware)
   .use(simpleLoggingMiddleware)
   .use(simpleValidationMiddleware)
   .use(simpleCorsMiddleware)

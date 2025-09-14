@@ -36,32 +36,19 @@ export function initializeOpenTelemetry() {
       exporter: metricExporter,
       exportIntervalMillis: 1000, // Exporta métricas a cada 30 segundos
     }),
-    // Instrumentações específicas para Bun.js
+    // Instrumentações automáticas - mais simples para Bun.js
     instrumentations: [
-      // Usar instrumentações automáticas com configurações específicas
       getNodeAutoInstrumentations({
-        // Desabilitar instrumentações que não funcionam bem com Bun
+        // Desabilitar apenas instrumentações problemáticas
         '@opentelemetry/instrumentation-fs': {
-          enabled: true,
+          enabled: false,
         },
         '@opentelemetry/instrumentation-net': {
-          enabled: true,
+          enabled: false,
         },
-        // Manter instrumentação HTTP ativa
+        // Manter HTTP ativo sem hooks customizados
         '@opentelemetry/instrumentation-http': {
           enabled: true,
-          requestHook: (span, request) => {
-            const url = (request as any).url || (request as any).path || '';
-            span.setAttributes({
-              'http.url': url,
-              'http.method': (request as any).method || 'GET',
-            });
-          },
-          responseHook: (span, response) => {
-            span.setAttributes({
-              'http.status_code': (response as any).statusCode || 200,
-            });
-          },
         },
       }),
     ],
