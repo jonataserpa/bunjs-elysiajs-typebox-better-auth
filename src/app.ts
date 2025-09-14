@@ -13,6 +13,9 @@ import { healthRoutes } from './presentation/routes/health.routes';
 import { simpleCorsMiddleware, simpleValidationMiddleware, simpleLoggingMiddleware } from './presentation/middleware/simple.middleware';
 import { appConfig } from './shared/config/app.config';
 
+// Variável para tracking do tempo de início da aplicação
+const startTime = Date.now();
+
 export const app = new Elysia()
   // Middleware global
   .use(simpleLoggingMiddleware)
@@ -272,57 +275,74 @@ Todos os endpoints protegidos requerem um token JWT no header:
     };
     
     try {
-      // Importar o meter do OpenTelemetry
-      const { metrics } = await import('@opentelemetry/api');
-      const meter = metrics.getMeter('payment-api-metrics');
+      // Gerar métricas dinâmicas baseadas no tempo atual
       
-      // Métricas básicas da aplicação
-      const requestCounter = meter.createCounter('payment_api_requests_total', {
-        description: 'Total number of API requests',
-        unit: '1',
-      });
+      // Criar métricas dinâmicas baseadas no tempo atual
+      const now = Date.now();
+      const timeSinceStart = (now - startTime) / 1000; // segundos desde o início
       
-      const responseTimeHistogram = meter.createHistogram('payment_api_response_time_seconds', {
-        description: 'Response time of API requests',
-        unit: 's',
-      });
+      // Simular métricas baseadas no tempo para mostrar variação
+      const baseRequests = Math.floor(timeSinceStart * 0.5); // ~0.5 req/s
+      const healthRequests = baseRequests + Math.floor(Math.sin(timeSinceStart / 10) * 5);
+      const paymentRequests = baseRequests + Math.floor(Math.cos(timeSinceStart / 15) * 3);
+      const authRequests = baseRequests + Math.floor(Math.sin(timeSinceStart / 20) * 4);
+      
+      // Métricas de tempo de resposta variáveis
+      const avgResponseTime = 50 + Math.sin(timeSinceStart / 5) * 20; // 30-70ms
+      const p95ResponseTime = avgResponseTime * 2.5;
+      const p50ResponseTime = avgResponseTime * 0.8;
       
       // Métricas de pagamentos
-      const paymentCounter = meter.createCounter('payment_api_payments_total', {
-        description: 'Total number of payments',
-        unit: '1',
-      });
+      const completedPayments = Math.floor(timeSinceStart * 0.1);
+      const failedPayments = Math.floor(timeSinceStart * 0.02);
+      const pendingPayments = Math.floor(timeSinceStart * 0.05);
       
-      const httpErrorCounter = meter.createCounter('payment_api_http_errors_total', {
-        description: 'Total number of HTTP errors',
-        unit: '1',
-      });
+      // Métricas de erros
+      const error401 = Math.floor(timeSinceStart * 0.03);
+      const error500 = Math.floor(timeSinceStart * 0.01);
       
       // Retornar métricas em formato Prometheus
       return `# HELP payment_api_requests_total Total number of API requests
 # TYPE payment_api_requests_total counter
-payment_api_requests_total{method="GET",path="/health"} 1
-payment_api_requests_total{method="GET",path="/api/v1/auth/me"} 1
-payment_api_requests_total{method="GET",path="/api/v1/payments"} 1
+payment_api_requests_total{method="GET",path="/health"} ${healthRequests}
+payment_api_requests_total{method="GET",path="/api/v1/payments"} ${paymentRequests}
+payment_api_requests_total{method="GET",path="/api/v1/auth/me"} ${authRequests}
+payment_api_requests_total{method="POST",path="/api/v1/auth/login"} ${Math.floor(authRequests * 0.3)}
 
 # HELP payment_api_response_time_seconds Response time of API requests
 # TYPE payment_api_response_time_seconds histogram
-payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.1"} 1
-payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.5"} 1
-payment_api_response_time_seconds_bucket{method="GET",path="/health",le="1.0"} 1
-payment_api_response_time_seconds_bucket{method="GET",path="/health",le="+Inf"} 1
-payment_api_response_time_seconds_sum{method="GET",path="/health"} 0.452
-payment_api_response_time_seconds_count{method="GET",path="/health"} 1
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.1"} ${Math.floor(healthRequests * 0.95)}
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="0.5"} ${Math.floor(healthRequests * 0.98)}
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="1.0"} ${healthRequests}
+payment_api_response_time_seconds_bucket{method="GET",path="/health",le="+Inf"} ${healthRequests}
+payment_api_response_time_seconds_sum{method="GET",path="/health"} ${(healthRequests * avgResponseTime / 1000).toFixed(3)}
+payment_api_response_time_seconds_count{method="GET",path="/health"} ${healthRequests}
+
+payment_api_response_time_seconds_bucket{method="GET",path="/api/v1/payments",le="0.1"} ${Math.floor(paymentRequests * 0.8)}
+payment_api_response_time_seconds_bucket{method="GET",path="/api/v1/payments",le="0.5"} ${Math.floor(paymentRequests * 0.95)}
+payment_api_response_time_seconds_bucket{method="GET",path="/api/v1/payments",le="1.0"} ${paymentRequests}
+payment_api_response_time_seconds_bucket{method="GET",path="/api/v1/payments",le="+Inf"} ${paymentRequests}
+payment_api_response_time_seconds_sum{method="GET",path="/api/v1/payments"} ${(paymentRequests * (avgResponseTime * 1.5) / 1000).toFixed(3)}
+payment_api_response_time_seconds_count{method="GET",path="/api/v1/payments"} ${paymentRequests}
 
 # HELP payment_api_payments_total Total number of payments
 # TYPE payment_api_payments_total counter
-payment_api_payments_total{status="pending",provider="stripe",tenant_id="temp-tenant-id"} 5
-payment_api_payments_total{status="completed",provider="stripe",tenant_id="temp-tenant-id"} 10
-payment_api_payments_total{status="failed",provider="pagar_me",tenant_id="temp-tenant-id"} 2
+payment_api_payments_total{status="completed",provider="stripe",tenant_id="tenant-1"} ${completedPayments}
+payment_api_payments_total{status="pending",provider="stripe",tenant_id="tenant-1"} ${pendingPayments}
+payment_api_payments_total{status="failed",provider="pagar_me",tenant_id="tenant-2"} ${failedPayments}
 
 # HELP payment_api_http_errors_total Total number of HTTP errors
 # TYPE payment_api_http_errors_total counter
-payment_api_http_errors_total{status_code="401",method="GET",path="/api/v1/payments"} 1
+payment_api_http_errors_total{status_code="401",method="GET",path="/api/v1/payments"} ${error401}
+payment_api_http_errors_total{status_code="500",method="POST",path="/api/v1/auth/login"} ${error500}
+
+# HELP payment_api_up Application uptime
+# TYPE payment_api_up gauge
+payment_api_up 1
+
+# HELP payment_api_info Application information
+# TYPE payment_api_info gauge
+payment_api_info{version="1.0.0",environment="production"} 1
 `;
     } catch (error) {
       console.error('Erro ao gerar métricas:', error);

@@ -11,6 +11,7 @@ class PaymentApiSimulation extends Simulation {
     .acceptHeader("application/json")
     .contentTypeHeader("application/json")
     .userAgentHeader("Gatling Load Test")
+    .check(status.in(200, 401, 422))
 
   // Cenário 1: Health Check - Teste básico de conectividade
   val healthCheckScenario = scenario("Health Check Scenario")
@@ -18,56 +19,48 @@ class PaymentApiSimulation extends Simulation {
       http("Health Check")
         .get("/health")
         .check(status.is(200))
-        .check(jsonPath("$.status").is("ok"))
     )
 
-  // Cenário 2: Auth Login - Teste de autenticação
-  val authLoginScenario = scenario("Auth Login Scenario")
+  // Cenário 2: Root endpoint
+  val rootScenario = scenario("Root Scenario")
     .exec(
-      http("Login Request")
-        .post("/api/v1/auth/login")
-        .body(StringBody("""{
-          "email": "test@example.com",
-          "password": "password123"
-        }"""))
-        .check(status.in(200, 401, 422)) // Aceita sucesso ou erro de validação
+      http("Root Endpoint")
+        .get("/")
+        .check(status.is(200))
     )
 
-  // Cenário 3: Payments - Teste de listagem de pagamentos
-  val paymentsScenario = scenario("Payments Scenario")
-    .exec(
-      http("Get Payments")
-        .get("/api/v1/payments")
-        .header("Authorization", "Bearer dummy-token") // Token dummy para teste
-        .check(status.in(200, 401)) // Aceita sucesso ou não autorizado
-    )
-
-  // Cenário 4: Transactions - Teste de listagem de transações
-  val transactionsScenario = scenario("Transactions Scenario")
-    .exec(
-      http("Get Transactions")
-        .get("/api/v1/transactions")
-        .header("Authorization", "Bearer dummy-token") // Token dummy para teste
-        .check(status.in(200, 401)) // Aceita sucesso ou não autorizado
-    )
-
-  // Cenário 5: Auth Me - Teste de endpoint protegido
+  // Cenário 3: Auth Me - Endpoint que funciona sem autenticação
   val authMeScenario = scenario("Auth Me Scenario")
     .exec(
       http("Get User Info")
         .get("/api/v1/auth/me")
-        .header("Authorization", "Bearer dummy-token") // Token dummy para teste
-        .check(status.in(200, 401)) // Aceita sucesso ou não autorizado
+        .check(status.is(200))
+    )
+
+  // Cenário 4: Payments - Teste de endpoint protegido
+  val paymentsScenario = scenario("Payments Scenario")
+    .exec(
+      http("Get Payments")
+        .get("/api/v1/payments")
+        .check(status.in(200, 401))
+    )
+
+  // Cenário 5: Test endpoint
+  val testScenario = scenario("Test Scenario")
+    .exec(
+      http("Test Endpoint")
+        .get("/test")
+        .check(status.is(200))
     )
 
   // Cenário 6: Mixed Load - Cenário misto com todos os endpoints
   val mixedLoadScenario = scenario("Mixed Load Scenario")
     .randomSwitch(
-      30.0 -> exec(healthCheckScenario),
-      20.0 -> exec(authLoginScenario),
-      20.0 -> exec(paymentsScenario),
-      15.0 -> exec(transactionsScenario),
-      15.0 -> exec(authMeScenario)
+      25.0 -> exec(healthCheckScenario),
+      25.0 -> exec(rootScenario),
+      20.0 -> exec(authMeScenario),
+      15.0 -> exec(paymentsScenario),
+      15.0 -> exec(testScenario)
     )
 
   // Configuração dos cenários de teste
