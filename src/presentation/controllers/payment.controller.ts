@@ -31,6 +31,8 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
       }
     );
 
+    let dbSpan: any = null;
+    
     try {
       span.addEvent('payment.list.started', {
         page: query.page || 1,
@@ -75,7 +77,7 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
         tenantId: tenantId
       });
 
-      const dbSpan = TracingUtil.createDbSpan('SELECT', 'payments', {
+      dbSpan = TracingUtil.createDbSpan('SELECT', 'payments', {
         'db.tenant_id': tenantId
       });
 
@@ -159,8 +161,10 @@ export const paymentController = new Elysia({ prefix: '/api/v1/payments', name: 
         timestamp: new Date().toISOString()
       };
     } catch (error) {
-      dbSpan.setStatus(false, error as Error);
-      dbSpan.end();
+      if (dbSpan) {
+        dbSpan.setStatus(false, error as Error);
+        dbSpan.end();
+      }
       span.setStatus(500, error as Error);
       span.end();
       
